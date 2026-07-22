@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💰 Scarcity & Choice – 100 Student Dashboard</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; }
+.container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+/* Header */
+.header { background: linear-gradient(135deg, #1E4D7B, #2E6BAE); color: white; padding: 25px 30px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+.header h1 { font-size: 28px; }
+.header .subtitle { opacity: 0.8; font-size: 16px; }
+.header .badge { background: #F5A623; color: #1E4D7B; padding: 6px 16px; border-radius: 20px; font-weight: 700; font-size: 14px; }
+
+/* Tabs */
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; background: white; padding: 12px 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+.tab-btn { padding: 10px 22px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.3s; background: #e9ecef; color: #495057; }
+.tab-btn:hover { background: #dee2e6; }
+.tab-btn.active { background: #1E4D7B; color: white; }
+.tab-btn .count { background: rgba(255,255,255,0.3); padding: 1px 10px; border-radius: 12px; font-size: 11px; margin-left: 6px; }
+.tab-btn.active .count { background: rgba(255,255,255,0.3); }
+
+/* Dashboard Panels */
+.dashboard { display: none; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+.dashboard.active { display: block; }
+.dashboard-title { font-size: 22px; font-weight: 700; color: #1E4D7B; margin-bottom: 15px; border-bottom: 3px solid #F5A623; padding-bottom: 10px; }
+
+/* Stats Grid */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin: 15px 0; }
+.stat-card { background: #f8f9fa; padding: 14px; border-radius: 8px; text-align: center; border-left: 4px solid #1E4D7B; transition: 0.3s; }
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.stat-card .number { font-size: 26px; font-weight: 700; color: #1E4D7B; }
+.stat-card .label { font-size: 12px; color: #666; margin-top: 4px; }
+.stat-card.green { border-left-color: #28a745; }
+.stat-card.orange { border-left-color: #fd7e14; }
+.stat-card.red { border-left-color: #dc3545; }
+.stat-card.purple { border-left-color: #6f42c1; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; margin: 15px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+table th { background: #1E4D7B; color: white; padding: 10px 12px; text-align: center; position: sticky; top: 0; white-space: nowrap; }
+table td { padding: 8px 10px; border: 1px solid #ddd; text-align: center; }
+table tr:nth-child(even) { background: #f8f9fa; }
+table tr:hover { background: #e3f2fd; }
+table .highlight-green { background: #d4edda !important; }
+table .highlight-red { background: #f8d7da !important; }
+table .highlight-gold { background: #fff3cd !important; }
+
+/* Inputs */
+.input-group { display: flex; gap: 10px; flex-wrap: wrap; margin: 15px 0; align-items: center; }
+.input-group input, .input-group select { padding: 8px 14px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; flex: 1; min-width: 120px; }
+.input-group input:focus, .input-group select:focus { border-color: #1E4D7B; outline: none; box-shadow: 0 0 0 2px rgba(30,77,123,0.2); }
+
+/* Buttons */
+.btn { padding: 8px 20px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+.btn-primary { background: #1E4D7B; color: white; }
+.btn-primary:hover { background: #2E6BAE; }
+.btn-success { background: #28a745; color: white; }
+.btn-success:hover { background: #218838; }
+.btn-danger { background: #dc3545; color: white; }
+.btn-danger:hover { background: #c82333; }
+.btn-warning { background: #ffc107; color: #333; }
+.btn-warning:hover { background: #e0a800; }
+.btn-outline { background: transparent; border: 2px solid #1E4D7B; color: #1E4D7B; }
+.btn-outline:hover { background: #1E4D7B; color: white; }
+.btn-sm { padding: 5px 14px; font-size: 12px; }
+
+/* Student Entry Form */
+.entry-form { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 15px 0; border: 2px dashed #dee2e6; }
+.entry-form h4 { color: #1E4D7B; margin-bottom: 12px; }
+.entry-form .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+
+/* Progress Bar */
+.progress-bar { height: 8px; background: #e9ecef; border-radius: 4px; overflow: hidden; margin: 10px 0; }
+.progress-bar .fill { height: 100%; background: linear-gradient(90deg, #28a745, #F5A623); border-radius: 4px; transition: width 0.5s; }
+
+/* Modal */
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+.modal.active { display: flex; }
+.modal-content { background: white; padding: 30px; border-radius: 12px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
+.modal-content h3 { color: #1E4D7B; margin-bottom: 15px; }
+.modal-content .close { float: right; font-size: 24px; cursor: pointer; color: #999; }
+.modal-content .close:hover { color: #333; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header h1 { font-size: 20px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .tab-btn { padding: 8px 14px; font-size: 12px; }
+  .dashboard { padding: 15px; }
+  .entry-form .row { grid-template-columns: 1fr; }
+}
+
+/* Student ID Badge */
+.student-badge { display: inline-block; background: #1E4D7B; color: white; padding: 2px 12px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+.status-done { color: #28a745; font-weight: 700; }
+.status-pending { color: #fd7e14; font-weight: 700; }
+
+/* Tooltip */
+.tooltip { position: relative; cursor: help; border-bottom: 1px dotted #999; }
+.tooltip:hover::after { content: attr(data-tip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 4px 12px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+
+/* Export */
+.export-bar { display: flex; gap: 10px; flex-wrap: wrap; margin: 15px 0; padding: 15px; background: #f8f9fa; border-radius: 8px; align-items: center; }
+.export-bar span { font-weight: 600; color: #1E4D7B; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <h1>💰 Scarcity & Choice – 100 Student Dashboard</h1>
+    <div class="subtitle">The ₹10,000 Budget Challenge</div>
+  </div>
+  <div style="display: flex; gap: 10px; align-items: center;">
+    <span class="badge" id="totalStudents">0 Students</span>
+    <span class="badge" style="background: #28a745; color: white;" id="completedStudents">0 Completed</span>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" data-tab="tabSummary">📊 Summary Dashboard</button>
+  <button class="tab-btn" data-tab="tabStudents">👥 Student Tracker</button>
+  <button class="tab-btn" data-tab="tabAdd">➕ Add Student Data</button>
+  <button class="tab-btn" data-tab="tabAnalysis">📈 Analysis</button>
+  <button class="tab-btn" data-tab="tabExport">📤 Export</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 1: SUMMARY DASHBOARD -->
+<!-- ============================================================ -->
+<div class="dashboard active" id="tabSummary">
+  <div class="dashboard-title">📊 Class Summary</div>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="number" id="sumTotal">0</div><div class="label">Total Students</div></div>
+    <div class="stat-card green"><div class="number" id="sumCompleted">0</div><div class="label">Completed Round 1</div></div>
+    <div class="stat-card orange"><div class="number" id="sumInProgress">0</div><div class="label">In Progress</div></div>
+    <div class="stat-card purple"><div class="number" id="sumAvgSpend">₹0</div><div class="label">Average Spending</div></div>
+    <div class="stat-card red"><div class="number" id="sumAvgCut">0</div><div class="label">Avg Categories Cut</div></div>
+  </div>
+
+  <div class="progress-bar"><div class="fill" id="completionBar" style="width:0%"></div></div>
+  <p style="text-align:center; font-size:13px; color:#666;">Class Completion: <span id="completionPct">0%</span></p>
+
+  <h4 style="color:#1E4D7B; margin:15px 0 10px;">Most Protected Categories</h4>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Rank</th><th>Category</th><th>Number of Students</th><th>% of Class</th></tr></thead>
+      <tbody id="protectedTable"></tbody>
+    </table>
+  </div>
+
+  <h4 style="color:#1E4D7B; margin:15px 0 10px;">Most Cut Categories</h4>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Rank</th><th>Category</th><th>Number of Students</th><th>% of Class</th></tr></thead>
+      <tbody id="cutTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 2: STUDENT TRACKER -->
+<!-- ============================================================ -->
+<div class="dashboard" id="tabStudents">
+  <div class="dashboard-title">👥 Student Tracker</div>
+
+  <div class="input-group">
+    <input type="text" id="searchStudent" placeholder="Search by Student ID or Name..." oninput="filterStudents()">
+    <select id="filterStatus" onchange="filterStudents()">
+      <option value="all">All Students</option>
+      <option value="completed">Completed Round 1</option>
+      <option value="inprogress">In Progress</option>
+      <option value="notstarted">Not Started</option>
+    </select>
+    <select id="filterCategory" onchange="filterStudents()">
+      <option value="all">All Categories</option>
+      <option value="Food">Food</option>
+      <option value="Basic">Basic Necessities</option>
+      <option value="Travel">Travel</option>
+      <option value="Entertainment">Entertainment</option>
+      <option value="Shopping">Shopping</option>
+      <option value="Dating">Dating/Social</option>
+      <option value="Education">Education</option>
+      <option value="Savings">Savings</option>
+    </select>
+    <button class="btn btn-primary btn-sm" onclick="resetFilters()">Reset</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>#</th>
+        <th>Student ID</th>
+        <th>Name</th>
+        <th>R1 Spent</th>
+        <th>R2 Spent</th>
+        <th>Budget Cut</th>
+        <th>Categories Cut</th>
+        <th>Most Protected</th>
+        <th>Most Cut</th>
+        <th>Status</th>
+      </tr></thead>
+      <tbody id="studentTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 3: ADD STUDENT DATA -->
+<!-- ============================================================ -->
+<div class="dashboard" id="tabAdd">
+  <div class="dashboard-title">➕ Add Student Data</div>
+
+  <div class="entry-form">
+    <h4>📝 Student Entry Form</h4>
+    <p style="color:#666; font-size:14px; margin-bottom:12px;">Enter student's budget allocation for Round 1 (must total ₹10,000)</p>
+
+    <div class="row">
+      <div>
+        <label>Student ID:</label>
+        <input type="text" id="newStudentId" placeholder="S001" value="S001">
+      </div>
+      <div>
+        <label>Student Name:</label>
+        <input type="text" id="newStudentName" placeholder="Enter name">
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:10px; margin:10px 0;">
+      <div><label>🍔 Food:</label> <input type="number" id="catFood" value="2000" step="100" min="0"></div>
+      <div><label>🧴 Basic Necessities:</label> <input type="number" id="catBasic" value="1500" step="100" min="0"></div>
+      <div><label>🚗 Travel:</label> <input type="number" id="catTravel" value="1200" step="100" min="0"></div>
+      <div><label>🎬 Entertainment:</label> <input type="number" id="catEntertainment" value="1000" step="100" min="0"></div>
+      <div><label>🛍️ Shopping:</label> <input type="number" id="catShopping" value="1000" step="100" min="0"></div>
+      <div><label>💕 Dating/Social:</label> <input type="number" id="catDating" value="800" step="100" min="0"></div>
+      <div><label>📚 Education:</label> <input type="number" id="catEducation" value="1200" step="100" min="0"></div>
+      <div><label>💰 Savings:</label> <input type="number" id="catSavings" value="1000" step="100" min="0"></div>
+      <div><label>📦 Other:</label> <input type="number" id="catOther" value="300" step="100" min="0"></div>
+    </div>
+
+    <div style="display:flex; gap:15px; align-items:center; flex-wrap:wrap; margin-top:10px;">
+      <span id="totalCheck" style="font-weight:700; font-size:16px;">Total: ₹0</span>
+      <span id="statusCheck" style="font-weight:700; font-size:16px;"></span>
+      <button class="btn btn-success" onclick="addStudent()">✅ Add Student</button>
+      <button class="btn btn-warning" onclick="clearForm()">🔄 Clear Form</button>
+    </div>
+  </div>
+
+  <div style="margin-top:20px;">
+    <h4 style="color:#1E4D7B;">📥 Bulk Import</h4>
+    <p style="font-size:14px; color:#666;">Paste CSV data (StudentID,Name,Food,Basic,Travel,Entertainment,Shopping,Dating,Education,Savings,Other)</p>
+    <textarea id="bulkImport" rows="4" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-family:monospace; font-size:13px;"></textarea>
+    <button class="btn btn-primary" onclick="bulkImport()" style="margin-top:8px;">📤 Import</button>
+    <button class="btn btn-outline btn-sm" onclick="document.getElementById('bulkImport').value=''" style="margin-top:8px;">Clear</button>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 4: ANALYSIS -->
+<!-- ============================================================ -->
+<div class="dashboard" id="tabAnalysis">
+  <div class="dashboard-title">📈 Analysis</div>
+
+  <div class="stats-grid">
+    <div class="stat-card green"><div class="number" id="analysisAvgR1">₹0</div><div class="label">Avg Round 1 Spend</div></div>
+    <div class="stat-card orange"><div class="number" id="analysisAvgR2">₹0</div><div class="label">Avg Round 2 Spend</div></div>
+    <div class="stat-card red"><div class="number" id="analysisAvgCutAmt">₹0</div><div class="label">Avg Budget Cut</div></div>
+    <div class="stat-card purple"><div class="number" id="analysisMostProtected">-</div><div class="label">Most Protected</div></div>
+    <div class="stat-card" style="border-left-color:#fd7e14;"><div class="number" id="analysisMostCut">-</div><div class="label">Most Cut</div></div>
+  </div>
+
+  <h4 style="color:#1E4D7B; margin:15px 0 10px;">Category Allocation Comparison</h4>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Category</th><th>Avg Round 1 (₹)</th><th>Avg Round 2 (₹)</th><th>Change (₹)</th><th>% Change</th></tr></thead>
+      <tbody id="analysisTable"></tbody>
+    </table>
+  </div>
+
+  <div style="margin-top:20px; background:#f8f9fa; padding:15px; border-radius:8px;">
+    <h4 style="color:#1E4D7B;">📌 Key Insights</h4>
+    <ul id="insightsList" style="list-style:none; padding:0;">
+      <li style="padding:6px 0; border-bottom:1px solid #eee;">💡 Data will appear here as students are added</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 5: EXPORT -->
+<!-- ============================================================ -->
+<div class="dashboard" id="tabExport">
+  <div class="dashboard-title">📤 Export Data</div>
+
+  <div class="export-bar">
+    <span>📊 Export Options:</span>
+    <button class="btn btn-success" onclick="exportCSV()">📥 Download CSV</button>
+    <button class="btn btn-primary" onclick="exportJSON()">📥 Download JSON</button>
+    <button class="btn btn-warning" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+    <button class="btn btn-danger" onclick="clearAllData()">🗑️ Clear All Data</button>
+  </div>
+
+  <div style="margin-top:15px;">
+    <h4 style="color:#1E4D7B;">📋 Data Preview</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Student ID</th><th>Name</th><th>Food</th><th>Basic</th><th>Travel</th>
+          <th>Entertainment</th><th>Shopping</th><th>Dating</th><th>Education</th><th>Savings</th><th>Other</th>
+          <th>Total</th><th>Status</th>
+        </tr></thead>
+        <tbody id="exportTable"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- JAVASCRIPT – All Logic -->
+<!-- ============================================================ -->
+<script>
+// =============================================================
+// DATA STORE
+// =============================================================
+let students = [];
+let studentIdCounter = 1;
+
+// Categories
+const CATEGORIES = ['Food', 'Basic', 'Travel', 'Entertainment', 'Shopping', 'Dating', 'Education', 'Savings', 'Other'];
+const CAT_KEYS = ['food', 'basic', 'travel', 'entertainment', 'shopping', 'dating', 'education', 'savings', 'other'];
+
+// Load from localStorage
+function loadData() {
+  const saved = localStorage.getItem('scarcityStudents');
+  if (saved) {
+    try {
+      students = JSON.parse(saved);
+      studentIdCounter = students.length + 1;
+      renderAll();
+    } catch(e) { students = []; }
+  }
+}
+
+function saveData() {
+  localStorage.setItem('scarcityStudents', JSON.stringify(students));
+}
+
+// =============================================================
+// TAB SWITCHING
+// =============================================================
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    document.querySelectorAll('.dashboard').forEach(d => d.classList.remove('active'));
+    document.getElementById(this.dataset.tab).classList.add('active');
+  });
+});
+
+// =============================================================
+// ADD STUDENT
+// =============================================================
+function addStudent() {
+  const id = document.getElementById('newStudentId').value.trim() || ('S' + String(studentIdCounter).padStart(3,'0'));
+  const name = document.getElementById('newStudentName').value.trim() || ('Student ' + studentIdCounter);
+
+  const data = {
+    id: id,
+    name: name,
+    food: parseInt(document.getElementById('catFood').value) || 0,
+    basic: parseInt(document.getElementById('catBasic').value) || 0,
+    travel: parseInt(document.getElementById('catTravel').value) || 0,
+    entertainment: parseInt(document.getElementById('catEntertainment').value) || 0,
+    shopping: parseInt(document.getElementById('catShopping').value) || 0,
+    dating: parseInt(document.getElementById('catDating').value) || 0,
+    education: parseInt(document.getElementById('catEducation').value) || 0,
+    savings: parseInt(document.getElementById('catSavings').value) || 0,
+    other: parseInt(document.getElementById('catOther').value) || 0
+  };
+
+  const total = Object.values(data).slice(2).reduce((a,b) => a + b, 0);
+  if (total !== 10000) {
+    alert('Total must equal ₹10,000. Current total: ₹' + total);
+    return;
+  }
+
+  // Check for duplicate ID
+  if (students.some(s => s.id === data.id)) {
+    if (!confirm('Student ID ' + data.id + ' already exists. Overwrite?')) return;
+    students = students.filter(s => s.id !== data.id);
+  }
+
+  students.push(data);
+  studentIdCounter++;
+  saveData();
+  renderAll();
+  clearForm();
+  alert('✅ Student ' + data.id + ' added successfully!');
+}
+
+function clearForm() {
+  document.getElementById('newStudentId').value = 'S' + String(studentIdCounter).padStart(3,'0');
+  document.getElementById('newStudentName').value = '';
+  document.getElementById('catFood').value = 2000;
+  document.getElementById('catBasic').value = 1500;
+  document.getElementById('catTravel').value = 1200;
+  document.getElementById('catEntertainment').value = 1000;
+  document.getElementById('catShopping').value = 1000;
+  document.getElementById('catDating').value = 800;
+  document.getElementById('catEducation').value = 1200;
+  document.getElementById('catSavings').value = 1000;
+  document.getElementById('catOther').value = 300;
+  updateTotal();
+}
+
+function updateTotal() {
+  const vals = [
+    parseInt(document.getElementById('catFood').value) || 0,
+    parseInt(document.getElementById('catBasic').value) || 0,
+    parseInt(document.getElementById('catTravel').value) || 0,
+    parseInt(document.getElementById('catEntertainment').value) || 0,
+    parseInt(document.getElementById('catShopping').value) || 0,
+    parseInt(document.getElementById('catDating').value) || 0,
+    parseInt(document.getElementById('catEducation').value) || 0,
+    parseInt(document.getElementById('catSavings').value) || 0,
+    parseInt(document.getElementById('catOther').value) || 0
+  ];
+  const total = vals.reduce((a,b) => a + b, 0);
+  document.getElementById('totalCheck').textContent = 'Total: ₹' + total;
+  const status = document.getElementById('statusCheck');
+  if (total === 10000) {
+    status.textContent = '✅ Balanced!';
+    status.style.color = '#28a745';
+  } else if (total < 10000) {
+    status.textContent = '⚠️ Short by ₹' + (10000 - total);
+    status.style.color = '#fd7e14';
+  } else {
+    status.textContent = '⚠️ Over by ₹' + (total - 10000);
+    status.style.color = '#dc3545';
+  }
+}
+
+// Auto-update total
+document.querySelectorAll('#tabAdd input[type="number"]').forEach(inp => {
+  inp.addEventListener('input', updateTotal);
+});
+
+// =============================================================
+// BULK IMPORT
+// =============================================================
+function bulkImport() {
+  const text = document.getElementById('bulkImport').value.trim();
+  if (!text) { alert('Please paste CSV data'); return; }
+  const lines = text.split('\n');
+  let added = 0;
+  lines.forEach(line => {
+    const parts = line.split(',').map(s => s.trim());
+    if (parts.length >= 11) {
+      const data = {
+        id: parts[0] || ('S' + String(studentIdCounter).padStart(3,'0')),
+        name: parts[1] || ('Student ' + studentIdCounter),
+        food: parseInt(parts[2]) || 0,
+        basic: parseInt(parts[3]) || 0,
+        travel: parseInt(parts[4]) || 0,
+        entertainment: parseInt(parts[5]) || 0,
+        shopping: parseInt(parts[6]) || 0,
+        dating: parseInt(parts[7]) || 0,
+        education: parseInt(parts[8]) || 0,
+        savings: parseInt(parts[9]) || 0,
+        other: parseInt(parts[10]) || 0
+      };
+      const total = Object.values(data).slice(2).reduce((a,b) => a + b, 0);
+      if (total === 10000) {
+        students.push(data);
+        studentIdCounter++;
+        added++;
+      }
+    }
+  });
+  saveData();
+  renderAll();
+  alert('✅ Imported ' + added + ' students!');
+}
+
+// =============================================================
+// RENDER ALL
+// =============================================================
+function renderAll() {
+  renderSummary();
+  renderStudentTable();
+  renderExportTable();
+  renderAnalysis();
+  renderProtectedCut();
+  updateStudentCount();
+  document.getElementById('newStudentId').value = 'S' + String(studentIdCounter).padStart(3,'0');
+}
+
+function updateStudentCount() {
+  document.getElementById('totalStudents').textContent = students.length + ' Students';
+  const completed = students.filter(s => isCompleted(s)).length;
+  document.getElementById('completedStudents').textContent = completed + ' Completed';
+}
+
+function isCompleted(s) {
+  const total = CAT_KEYS.reduce((sum, k) => sum + (s[k] || 0), 0);
+  return total === 10000;
+}
+
+// =============================================================
+// RENDER SUMMARY
+// =============================================================
+function renderSummary() {
+  const total = students.length;
+  const completed = students.filter(isCompleted).length;
+  const inProgress = students.filter(s => {
+    const total = CAT_KEYS.reduce((sum, k) => sum + (s[k] || 0), 0);
+    return total > 0 && total < 10000;
+  }).length;
+
+  document.getElementById('sumTotal').textContent = total;
+  document.getElementById('sumCompleted').textContent = completed;
+  document.getElementById('sumInProgress').textContent = inProgress;
+
+  const avgSpend = total > 0 ? Math.round(students.reduce((sum, s) => sum + CAT_KEYS.reduce((a,k) => a + (s[k]||0), 0), 0) / total) : 0;
+  document.getElementById('sumAvgSpend').textContent = '₹' + avgSpend;
+
+  const pct = total > 0 ? Math.round((completed/total)*100) : 0;
+  document.getElementById('completionBar').style.width = pct + '%';
+  document.getElementById('completionPct').textContent = pct + '%';
+}
+
+// =============================================================
+// RENDER PROTECTED & CUT CATEGORIES
+// =============================================================
+function renderProtectedCut() {
+  const counts = {};
+  CATEGORIES.forEach(c => counts[c] = 0);
+
+  students.forEach(s => {
+    let maxVal = -1, maxCat = '';
+    let minVal = Infinity, minCat = '';
+    CAT_KEYS.forEach((k, i) => {
+      const val = s[k] || 0;
+      if (val > maxVal) { maxVal = val; maxCat = CATEGORIES[i]; }
+      if (val < minVal && val > 0) { minVal = val; minCat = CATEGORIES[i]; }
+    });
+    if (maxCat) counts[maxCat] = (counts[maxCat] || 0) + 1;
+    // For cut, we track which categories were CUT (reduced in Round 2)
+    // For simplicity, we use the min category as "most cut"
+    if (minCat && minVal < 500) counts[minCat + '_cut'] = (counts[minCat + '_cut'] || 0) + 1;
+  });
+
+  // Protected table
+  const protectedData = CATEGORIES.map(c => ({ cat: c, count: counts[c] || 0 }))
+    .sort((a,b) => b.count - a.count);
+  const protectedBody = document.getElementById('protectedTable');
+  protectedBody.innerHTML = '';
+  protectedData.forEach((d, i) => {
+    if (d.count > 0) {
+      const row = document.createElement('tr');
+      row.innerHTML = `<td>${i+1}</td><td>${d.cat}</td><td>${d.count}</td><td>${students.length > 0 ? Math.round((d.count/students.length)*100) : 0}%</td>`;
+      protectedBody.appendChild(row);
+    }
+  });
+
+  // Cut table
+  const cutData = CATEGORIES.map(c => ({ cat: c, count: counts[c + '_cut'] || 0 }))
+    .sort((a,b) => b.count - a.count);
+  const cutBody = document.getElementById('cutTable');
+  cutBody.innerHTML = '';
+  cutData.forEach((d, i) => {
+    if (d.count > 0) {
+      const row = document.createElement('tr');
+      row.innerHTML = `<td>${i+1}</td><td>${d.cat}</td><td>${d.count}</td><td>${students.length > 0 ? Math.round((d.count/students.length)*100) : 0}%</td>`;
+      cutBody.appendChild(row);
+    }
+  });
+}
+
+// =============================================================
+// RENDER STUDENT TABLE
+// =============================================================
+function renderStudentTable(filteredStudents) {
+  const data = filteredStudents || students;
+  const tbody = document.getElementById('studentTable');
+  tbody.innerHTML = '';
+  data.forEach((s, i) => {
+    const total = CAT_KEYS.reduce((sum, k) => sum + (s[k] || 0), 0);
+    const status = total === 10000 ? '✅ Completed' : total > 0 ? '⏳ In Progress' : '❌ Not Started';
+    const statusClass = total === 10000 ? 'status-done' : 'status-pending';
+
+    // Find most protected and cut
+    let maxVal = -1, maxCat = '';
+    let minVal = Infinity, minCat = '';
+    CAT_KEYS.forEach((k, idx) => {
+      const val = s[k] || 0;
+      if (val > maxVal) { maxVal = val; maxCat = CATEGORIES[idx]; }
+      if (val < minVal && val > 0) { minVal = val; minCat = CATEGORIES[idx]; }
+    });
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${i+1}</td>
+      <td><span class="student-badge">${s.id}</span></td>
+      <td>${s.name}</td>
+      <td>₹${total}</td>
+      <td>₹${total}</td>
+      <td>₹${Math.max(0, total - 7500)}</td>
+      <td>${Math.max(0, CAT_KEYS.filter(k => (s[k]||0) < 200).length)}</td>
+      <td class="highlight-green">${maxCat || '-'}</td>
+      <td class="highlight-red">${minCat || '-'}</td>
+      <td class="${statusClass}">${status}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+// =============================================================
+// FILTER STUDENTS
+// =============================================================
+function filterStudents() {
+  const search = document.getElementById('searchStudent').value.toLowerCase();
+  const status = document.getElementById('filterStatus').value;
+  const category = document.getElementById('filterCategory').value;
+
+  let filtered = students.filter(s => {
+    const matchSearch = s.id.toLowerCase().includes(search) || s.name.toLowerCase().includes(search);
+    const total = CAT_KEYS.reduce((sum, k) => sum + (s[k] || 0), 0);
+    let matchStatus = true;
+    if (status === 'completed') matchStatus = total === 10000;
+    else if (status === 'inprogress') matchStatus = total > 0 && total < 10000;
+    else if (status === 'notstarted') matchStatus = total === 0;
+
+    let matchCategory = true;
+    if (category !== 'all') {
+      const idx = CATEGORIES.indexOf(category);
+      matchCategory = (s[CAT_KEYS[idx]] || 0) > 0;
+    }
+    return matchSearch && matchStatus && matchCategory;
+  });
+
+  renderStudentTable(filtered);
+}
+
+function resetFilters() {
+  document.getElementById('searchStudent').value = '';
+  document.getElementById('filterStatus').value = 'all';
+  document.getElementById('filterCategory').value = 'all';
+  renderStudentTable();
+}
+
+// =============================================================
+// RENDER EXPORT TABLE
+// =============================================================
+function renderExportTable() {
+  const tbody = document.getElementById('exportTable');
+  tbody.innerHTML = '';
+  students.forEach(s => {
+    const total = CAT_KEYS.reduce((sum, k) => sum + (s[k] || 0), 0);
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td><span class="student-badge">${s.id}</span></td>
+      <td>${s.name}</td>
+      <td>₹${s.food||0}</td>
+      <td>₹${s.basic||0}</td>
+      <td>₹${s.travel||0}</td>
+      <td>₹${s.entertainment||0}</td>
+      <td>₹${s.shopping||0}</td>
+      <td>₹${s.dating||0}</td>
+      <td>₹${s.education||0}</td>
+      <td>₹${s.savings||0}</td>
+      <td>₹${s.other||0}</td>
+      <td class="${total === 10000 ? 'highlight-green' : 'highlight-red'}">₹${total}</td>
+      <td>${total === 10000 ? '✅' : '⚠️'}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+// =============================================================
+// RENDER ANALYSIS
+// =============================================================
+function renderAnalysis() {
+  const n = students.length;
+  if (n === 0) {
+    document.getElementById('analysisAvgR1').textContent = '₹0';
+    document.getElementById('analysisAvgR2').textContent = '₹0';
+    document.getElementById('analysisAvgCutAmt').textContent = '₹0';
+    document.getElementById('analysisMostProtected').textContent = '-';
+    document.getElementById('analysisMostCut').textContent = '-';
+    document.getElementById('analysisTable').innerHTML = '';
+    document.getElementById('insightsList').innerHTML = '<li style="padding:6px 0; border-bottom:1px solid #eee;">💡 Add students to see insights</li>';
+    return;
+  }
+
+  // Calculate averages
+  const totals = students.map(s => CAT_KEYS.reduce((sum, k) => sum + (s[k]||0), 0));
+  const avgR1 = Math.round(totals.reduce((a,b) => a + b, 0) / n);
+  document.getElementById('analysisAvgR1').textContent = '₹' + avgR1;
+
+  const avgR2 = Math.round(avgR1 * 0.75);
+  document.getElementById('analysisAvgR2').textContent = '₹' + avgR2;
+
+  const avgCut = Math.round(avgR1 - avgR2);
+  document.getElementById('analysisAvgCutAmt').textContent = '₹' + avgCut;
+
+  // Most protected/cut
+  const catTotals = {};
+  CATEGORIES.forEach((c, i) => {
+    catTotals[c] = students.reduce((sum, s) => sum + (s[CAT_KEYS[i]] || 0), 0);
+  });
+  const maxCat = Object.keys(catTotals).reduce((a,b) => catTotals[a] > catTotals[b] ? a : b);
+  const minCat = Object.keys(catTotals).reduce((a,b) => catTotals[a] < catTotals[b] ? a : b);
+  document.getElementById('analysisMostProtected').textContent = maxCat + ' (₹' + Math.round(catTotals[maxCat]/n) + ')';
+  document.getElementById('analysisMostCut').textContent = minCat + ' (₹' + Math.round(catTotals[minCat]/n) + ')';
+
+  // Category table
+  const tbody = document.getElementById('analysisTable');
+  tbody.innerHTML = '';
+  CATEGORIES.forEach((c, i) => {
+    const key = CAT_KEYS[i];
+    const avg1 = Math.round(students.reduce((sum, s) => sum + (s[key]||0), 0) / n);
+    const avg2 = Math.round(avg1 * 0.75);
+    const change = avg2 - avg1;
+    const pct = avg1 > 0 ? Math.round((change / avg1) * 100) : 0;
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${c}</td>
+      <td>₹${avg1}</td>
+      <td>₹${avg2}</td>
+      <td class="${change < 0 ? 'highlight-red' : 'highlight-green'}">${change >= 0 ? '+' : ''}₹${change}</td>
+      <td class="${pct < 0 ? 'highlight-red' : 'highlight-green'}">${pct >= 0 ? '+' : ''}${pct}%</td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  // Insights
+  const insights = document.getElementById('insightsList');
+  insights.innerHTML = '';
+  const insightsText = [
+    '📊 Total Students: ' + n,
+    '💰 Average Round 1 Spend: ₹' + avgR1,
+    '📉 Average Budget Cut: ₹' + avgCut + ' (' + Math.round((avgCut/avgR1)*100) + '%)',
+    '🛡️ Most Protected: ' + maxCat,
+    '✂️ Most Cut: ' + minCat,
+    '🎯 ' + students.filter(isCompleted).length + ' students completed Round 1'
+  ];
+  insightsText.forEach(t => {
+    const li = document.createElement('li');
+    li.textContent = t;
+    li.style.padding = '6px 0';
+    li.style.borderBottom = '1px solid #eee';
+    insights.appendChild(li);
+  });
+}
+
+// =============================================================
+// EXPORT FUNCTIONS
+// =============================================================
+function exportCSV() {
+  if (students.length === 0) { alert('No data to export'); return; }
+  let csv = 'StudentID,Name,Food,Basic,Travel,Entertainment,Shopping,Dating,Education,Savings,Other,Total,Status\n';
+  students.forEach(s => {
+    const total = CAT_KEYS.reduce((sum, k) => sum + (s[k]||0), 0);
+    const vals = CAT_KEYS.map(k => s[k]||0);
+    csv += [s.id, s.name, ...vals, total, total===10000?'Completed':'In Progress'].join(',') + '\n';
+  });
+  downloadFile(csv, 'scarcity_data.csv', 'text/csv');
+}
+
+function exportJSON() {
+  if (students.length === 0) { alert('No data to export'); return; }
+  const json = JSON.stringify(students, null, 2);
+  downloadFile(json, 'scarcity_data.json', 'application/json');
+}
+
+function copyToClipboard() {
+  if (students.length === 0) { alert('No data to copy'); return; }
+  const text = students.map(s => {
+    const total = CAT_KEYS.reduce((sum, k) => sum + (s[k]||0), 0);
+    return `${s.id},${s.name},${total},${total===10000?'Completed':'In Progress'}`;
+  }).join('\n');
+  navigator.clipboard.writeText(text).then(() => alert('✅ Copied to clipboard!'));
+}
+
+function downloadFile(content, filename, mimeType) {
+  const blob = new Blob([content], { type: mimeType + ';charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+function clearAllData() {
+  if (confirm('⚠️ Delete ALL student data? This cannot be undone.')) {
+    students = [];
+    studentIdCounter = 1;
+    saveData();
+    renderAll();
+    alert('All data cleared.');
+  }
+}
+
+// =============================================================
+// INITIALIZE WITH SAMPLE DATA
+// =============================================================
+function initSampleData() {
+  const sampleStudents = [
+    { id: 'S001', name: 'Aarav Sharma', food: 2500, basic: 1500, travel: 1000, entertainment: 800, shopping: 800, dating: 600, education: 1200, savings: 1000, other: 600 },
+    { id: 'S002', name: 'Priya Patel', food: 2000, basic: 1800, travel: 1200, entertainment: 600, shopping: 1200, dating: 500, education: 1500, savings: 800, other: 400 },
+    { id: 'S003', name: 'Rahul Singh', food: 3000, basic: 1200, travel: 800, entertainment: 1000, shopping: 500, dating: 700, education: 1000, savings: 1200, other: 600 },
+    { id: 'S004', name: 'Sneha Reddy', food: 1800, basic: 2000, travel: 1500, entertainment: 500, shopping: 600, dating: 800, education: 1800, savings: 600, other: 400 },
+    { id: 'S005', name: 'Vikram Kumar', food: 2200, basic: 1300, travel: 1000, entertainment: 900, shopping: 700, dating: 900, education: 1300, savings: 900, other: 800 },
+    { id: 'S006', name: 'Ananya Gupta', food: 1500, basic: 1600, travel: 800, entertainment: 1200, shopping: 1500, dating: 600, education: 1400, savings: 1000, other: 400 },
+    { id: 'S007', name: 'Arjun Nair', food: 2800, basic: 1000, travel: 600, entertainment: 800, shopping: 400, dating: 500, education: 2000, savings: 1200, other: 700 },
+    { id: 'S008', name: 'Meera Iyer', food: 1600, basic: 2200, travel: 1200, entertainment: 400, shopping: 800, dating: 400, education: 1600, savings: 1400, other: 400 },
+    { id: 'S009', name: 'Karan Joshi', food: 2400, basic: 1400, travel: 1400, entertainment: 600, shopping: 600, dating: 1000, education: 1100, savings: 800, other: 700 },
+    { id: 'S010', name: 'Divya Menon', food: 1900, basic: 1700, travel: 900, entertainment: 1100, shopping: 900, dating: 700, education: 1200, savings: 1100, other: 500 }
+  ];
+  students = sampleStudents;
+  studentIdCounter = 11;
+  saveData();
+  renderAll();
+}
+
+// =============================================================
+// AUTO-SAVE ON INPUT
+// =============================================================
+// Save data periodically
+setInterval(saveData, 5000);
+
+// =============================================================
+// LOAD DATA AND RENDER
+// =============================================================
+loadData();
+if (students.length === 0) {
+  initSampleData();
+} else {
+  renderAll();
+}
+updateTotal();
+
+console.log('💰 Scarcity & Choice Dashboard loaded!');
+console.log('📊 Students:', students.length);
+</script>
+
+</body>
+</html>

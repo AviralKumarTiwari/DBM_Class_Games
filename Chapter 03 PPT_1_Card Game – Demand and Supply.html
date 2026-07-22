@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎴 Card Game – Demand & Supply Dashboard</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; }
+.container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+/* Header */
+.header { background: linear-gradient(135deg, #1E4D7B, #2E6BAE); color: white; padding: 25px 30px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+.header h1 { font-size: 28px; }
+.header .subtitle { opacity: 0.8; font-size: 16px; }
+.header .badge { background: #F5A623; color: #1E4D7B; padding: 6px 16px; border-radius: 20px; font-weight: 700; font-size: 14px; margin: 4px; }
+.header .badge.green { background: #28a745; color: white; }
+.header .badge.red { background: #dc3545; color: white; }
+.header .badge.gold { background: #FFD700; color: #1E4D7B; }
+
+/* Tabs */
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; background: white; padding: 12px 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+.tab-btn { padding: 10px 22px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.3s; background: #e9ecef; color: #495057; }
+.tab-btn:hover { background: #dee2e6; }
+.tab-btn.active { background: #1E4D7B; color: white; }
+.tab-btn .count { background: rgba(255,255,255,0.3); padding: 1px 10px; border-radius: 12px; font-size: 11px; margin-left: 6px; }
+.tab-btn.active .count { background: rgba(255,255,255,0.3); }
+
+/* Dashboard Panels */
+.dashboard { display: none; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+.dashboard.active { display: block; }
+.dashboard-title { font-size: 22px; font-weight: 700; color: #1E4D7B; margin-bottom: 15px; border-bottom: 3px solid #F5A623; padding-bottom: 10px; }
+
+/* Stats Grid */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 15px 0; }
+.stat-card { background: #f8f9fa; padding: 14px; border-radius: 8px; text-align: center; border-left: 4px solid #1E4D7B; transition: 0.3s; }
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.stat-card .number { font-size: 26px; font-weight: 700; color: #1E4D7B; }
+.stat-card .label { font-size: 12px; color: #666; margin-top: 4px; }
+.stat-card.green { border-left-color: #28a745; }
+.stat-card.orange { border-left-color: #fd7e14; }
+.stat-card.red { border-left-color: #dc3545; }
+.stat-card.purple { border-left-color: #6f42c1; }
+.stat-card.gold { border-left-color: #F5A623; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; margin: 15px 0; max-height: 500px; overflow-y: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+table th { background: #1E4D7B; color: white; padding: 10px 12px; text-align: center; position: sticky; top: 0; z-index: 10; white-space: nowrap; }
+table td { padding: 8px 10px; border: 1px solid #ddd; text-align: center; }
+table tr:nth-child(even) { background: #f8f9fa; }
+table tr:hover { background: #e3f2fd; }
+table .highlight-green { background: #d4edda !important; }
+table .highlight-red { background: #f8d7da !important; }
+table .highlight-gold { background: #fff3cd !important; }
+table .rank-1 { background: #FFD700 !important; font-weight: 700; }
+table .rank-2 { background: #C0C0C0 !important; font-weight: 700; }
+table .rank-3 { background: #CD7F32 !important; color: white; font-weight: 700; }
+table .buyer-row { border-left: 4px solid #1E4D7B; }
+table .seller-row { border-left: 4px solid #dc3545; }
+
+/* Student Entry Form */
+.entry-form { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 15px 0; border: 2px dashed #dee2e6; }
+.entry-form h4 { color: #1E4D7B; margin-bottom: 12px; }
+.entry-form .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+
+/* Buttons */
+.btn { padding: 8px 20px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+.btn-primary { background: #1E4D7B; color: white; }
+.btn-primary:hover { background: #2E6BAE; }
+.btn-success { background: #28a745; color: white; }
+.btn-success:hover { background: #218838; }
+.btn-danger { background: #dc3545; color: white; }
+.btn-danger:hover { background: #c82333; }
+.btn-warning { background: #ffc107; color: #333; }
+.btn-warning:hover { background: #e0a800; }
+.btn-outline { background: transparent; border: 2px solid #1E4D7B; color: #1E4D7B; }
+.btn-outline:hover { background: #1E4D7B; color: white; }
+.btn-sm { padding: 5px 14px; font-size: 12px; }
+
+/* Inputs */
+.input-group { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; align-items: center; }
+.input-group input, .input-group select { padding: 8px 14px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; flex: 1; min-width: 120px; }
+.input-group input:focus, .input-group select:focus { border-color: #1E4D7B; outline: none; box-shadow: 0 0 0 2px rgba(30,77,123,0.2); }
+
+/* Progress Bar */
+.progress-bar { height: 8px; background: #e9ecef; border-radius: 4px; overflow: hidden; margin: 10px 0; }
+.progress-bar .fill { height: 100%; background: linear-gradient(90deg, #28a745, #F5A623); border-radius: 4px; transition: width 0.5s; }
+
+/* Student Badge */
+.student-badge { display: inline-block; background: #1E4D7B; color: white; padding: 2px 12px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+.badge-buyer { background: #1E4D7B; }
+.badge-seller { background: #dc3545; }
+.status-traded { color: #28a745; font-weight: 700; }
+.status-notraded { color: #dc3545; font-weight: 700; }
+
+/* Export Bar */
+.export-bar { display: flex; gap: 10px; flex-wrap: wrap; margin: 15px 0; padding: 15px; background: #f8f9fa; border-radius: 8px; align-items: center; }
+.export-bar span { font-weight: 600; color: #1E4D7B; }
+
+/* Chart Container */
+.chart-container { background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0; min-height: 200px; }
+.bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 150px; padding: 10px 0; }
+.bar { flex: 1; display: flex; flex-direction: column; align-items: center; }
+.bar-fill { width: 100%; min-height: 5px; border-radius: 4px 4px 0 0; transition: height 0.5s; }
+.bar-label { font-size: 11px; color: #666; margin-top: 4px; }
+
+/* Modal */
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+.modal.active { display: flex; }
+.modal-content { background: white; padding: 30px; border-radius: 12px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
+.modal-content h3 { color: #1E4D7B; margin-bottom: 15px; }
+.modal-content .close { float: right; font-size: 24px; cursor: pointer; color: #999; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header h1 { font-size: 20px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .tab-btn { padding: 8px 14px; font-size: 12px; }
+  .dashboard { padding: 15px; }
+  .entry-form .row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <h1>🎴 Playing Card Game – Demand & Supply</h1>
+    <div class="subtitle">100 Student Dashboard – Buyers (Black) & Sellers (Red)</div>
+  </div>
+  <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+    <span class="badge" id="totalStudents">0 Students</span>
+    <span class="badge green" id="tradedStudents">0 Traded</span>
+    <span class="badge red" id="notradedStudents">0 No Trade</span>
+    <span class="badge gold" id="avgSurplus">₹0</span>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" data-tab="tabSummary">📊 Summary Dashboard</button>
+  <button class="tab-btn" data-tab="tabStudents">👥 Student Tracker</button>
+  <button class="tab-btn" data-tab="tabAdd">➕ Add Trade</button>
+  <button class="tab-btn" data-tab="tabMarket">📈 Market Analysis</button>
+  <button class="tab-btn" data-tab="tabRankings">🏆 Rankings</button>
+  <button class="tab-btn" data-tab="tabExport">📤 Export</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 1: SUMMARY DASHBOARD -->
+<!-- ============================================================ -->
+<div class="dashboard active" id="tabSummary">
+  <div class="dashboard-title">📊 Summary Dashboard</div>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="number" id="sumTotal">0</div><div class="label">Total Students</div></div>
+    <div class="stat-card green"><div class="number" id="sumBuyers">0</div><div class="label">Buyers</div></div>
+    <div class="stat-card red"><div class="number" id="sumSellers">0</div><div class="label">Sellers</div></div>
+    <div class="stat-card gold"><div class="number" id="sumTrades">0</div><div class="label">Total Trades</div></div>
+    <div class="stat-card purple"><div class="number" id="sumAvgPrice">₹0</div><div class="label">Avg Trade Price</div></div>
+    <div class="stat-card orange"><div class="number" id="sumEquilibrium">₹0</div><div class="label">Equilibrium Price</div></div>
+  </div>
+
+  <div class="progress-bar"><div class="fill" id="completionBar" style="width:0%"></div></div>
+  <p style="text-align:center; font-size:13px; color:#666;">Trade Completion: <span id="completionPct">0%</span></p>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:15px;">
+    <div>
+      <h4 style="color:#1E4D7B; margin-bottom:10px;">📊 Consumer Surplus Distribution</h4>
+      <div class="chart-container">
+        <div class="bar-chart" id="csChart">
+          <!-- Generated by JavaScript -->
+        </div>
+      </div>
+    </div>
+    <div>
+      <h4 style="color:#1E4D7B; margin-bottom:10px;">📊 Producer Surplus Distribution</h4>
+      <div class="chart-container">
+        <div class="bar-chart" id="psChart">
+          <!-- Generated by JavaScript -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 2: STUDENT TRACKER -->
+<!-- ============================================================ -->
+<div class="dashboard" id="tabStudents">
+  <div class="dashboard-title">👥 Student Tracker</div>
+
+  <div class="input-group">
+    <input type="text" id="searchStudent" placeholder="Search by Student ID or Name..." oninput="filterStudents()">
+    <select id="filterRole" onchange="filterStudents()">
+      <option value="all">All Roles</option>
+      <option value="Buyer">Buyers</option>
+      <option value="Seller">Sellers</option>
+    </select>
+    <select id="filterTradeStatus" onchange="filterStudents()">
+      <option value="all">All Trades</option>
+      <option value="traded">Traded</option>
+      <option value="notraded">No Trade</option>
+    </select>
+    <button class="btn btn-primary btn-sm" onclick="resetFilters()">Reset</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>#</th>
+        <th>Student ID</th>
+        <th>Name</th>
+        <th>Role</th>
+        <th>Card Value</th>
+        <th>Trade Price</th>
+        <th>Surplus</th>
+        <th>Partner</th>
+        <th>Round</th>
+        <th>Status</th>
+      </tr></thead>
+      <tbody id="studentTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 3: ADD TRADE -->
+<!-- ============================================================ -->
+<div class="dashboard" id="tabAdd">
+  <div class="dashboard-title">➕ Add Trade</div>
+
+  <div class="entry-form">
+    <h4>📝 Record a Trade</h4>
+    <p style="color:#666; font-size:14px; margin-bottom:12px;">Enter the details of each trade between a buyer and a seller.</p>
+
+    <div class="row">
+      <div>
+        <label>Student ID:</label>
+        <input type="text" id="newStudentId" placeholder="S001" value="S001">
+      </div>
+      <div>
+        <label>Student Name:</label>
+        <input type="text" id="newStudentName" placeholder="Enter name">
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Role:</label>
+        <select id="newRole">
+          <option value="Buyer">Buyer (Black)</option>
+          <option value="Seller">Seller (Red)</option>
+        </select>
+      </div>
+      <div>
+        <label>Card Value (WTP/Cost):</label>
+        <input type="number" id="newCardValue" value="5" min="1" max="10">
+      </div>
+      <div>
+        <label>Trade Price:</label>
+        <input type="number" id="newTradePrice" value="4" min="0" max="20">
+      </div>
+      <div>
+        <label>Partner ID:</label>
+        <input type="text" id="newPartner" placeholder="S002">
+      </div>
+      <div>
+        <label>Round:</label>
+        <input type="number" id="newRound" value="1" min="1" max="10">
+      </div>
+    </div>
+
+    <div style="display:flex; gap:15px; align-items:center; flex-wrap:wrap; margin-top:10px;">
+      <span id="surplusPreview" style="font-weight:700; font-size:14px;"></span>
+      <button class="btn btn-success" onclick="addTrade()">✅ Record Trade</button>
+      <button class="btn btn-warning" onclick="clearTradeForm()">🔄 Clear</button>
+    </div>
+  </div>
+
+  <div style="margin-top:20px;">
+    <h4 style="color:#1E4D7B;">📥 Quick Add (Bulk)</h4>
+    <p style="font-size:14px; color:#666;">Format: StudentID,Name,Role,CardValue,TradePrice,Partner,Round (one per line)</p>
+    <p style="font-size:13px; color:#888;">Example: S001,Aarav,Buyer,7,5,S002,1</p>
+    <textarea id="bulkImport" rows="4" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-family:monospace; font-size:13px;"></textarea>
+    <button class="btn btn-primary" onclick="bulkImportTrades()" style="margin-top:8px;">📤 Import</button>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 4: MARKET ANALYSIS -->
+<!-- ============================================================ -->
+<div class="dashboard" id="tabMarket">
+  <div class="dashboard-title">📈 Market Analysis</div>
+
+  <div class="stats-grid">
+    <div class="stat-card green"><div class="number" id="marketTotalSurplus">₹0</div><div class="label">Total Surplus</div></div>
+    <div class="stat-card purple"><div class="number" id="marketConsumerSurplus">₹0</div><div class="label">Consumer Surplus</div></div>
+    <div class="stat-card orange"><div class="number" id="marketProducerSurplus">₹0</div><div class="label">Producer Surplus</div></div>
+    <div class="stat-card gold"><div class="number" id="marketEquilibrium">₹0</div><div class="label">Equilibrium Price</div></div>
+  </div>
+
+  <h4 style="color:#1E4D7B; margin:15px 0 10px;">📊 Price Distribution by Round</h4>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Round</th><th># Trades</th><th>Avg Price</th><th>Min Price</th><th>Max Price</th><th>Median Price</th></tr></thead>
+      <tbody id="marketTable"></tbody>
+    </table>
+  </div>
+
+  <h4 style="color:#1E4D7B; margin:15px 0 10px;">📊 Buyer WTP vs Seller Cost Distribution</h4>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Card Value</th><th># Buyers</th><th># Sellers</th><th>Net</th></tr></thead>
+      <tbody id="distributionTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 5: RANKINGS -->
+<!-- ============================================================ -->
+<div class="dashboard" id="tabRankings">
+  <div class="dashboard-title">🏆 Student Rankings</div>
+
+  <div class="stats-grid">
+    <div class="stat-card gold"><div class="number" id="rankTop">-</div><div class="label">Top Performer</div></div>
+    <div class="stat-card green"><div class="number" id="rankTopSurplus">₹0</div><div class="label">Top Surplus</div></div>
+    <div class="stat-card purple"><div class="number" id="rankTopBuyer">-</div><div class="label">Top Buyer</div></div>
+    <div class="stat-card orange"><div class="number" id="rankTopSeller">-</div><div class="label">Top Seller</div></div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Rank</th>
+        <th>Student ID</th>
+        <th>Name</th>
+        <th>Role</th>
+        <th>Card Value</th>
+        <th>Trade Price</th>
+        <th>Surplus</th>
+        <th>Partner</th>
+        <th>Round</th>
+        <th>Type</th>
+      </tr></thead>
+      <tbody id="rankingsTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 6: EXPORT -->
+<!-- ============================================================ -->
+<div class="dashboard" id="tabExport">
+  <div class="dashboard-title">📤 Export Data</div>
+
+  <div class="export-bar">
+    <span>📊 Export Options:</span>
+    <button class="btn btn-success" onclick="exportCSV()">📥 Download CSV</button>
+    <button class="btn btn-primary" onclick="exportJSON()">📥 Download JSON</button>
+    <button class="btn btn-warning" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+    <button class="btn btn-danger" onclick="clearAllData()">🗑️ Clear All Data</button>
+  </div>
+
+  <div style="margin-top:15px;">
+    <h4 style="color:#1E4D7B;">📋 Data Preview</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>ID</th><th>Name</th><th>Role</th><th>Card Value</th><th>Trade Price</th>
+          <th>Surplus</th><th>Partner</th><th>Round</th><th>Status</th>
+        </tr></thead>
+        <tbody id="exportTable"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- JAVASCRIPT – All Logic -->
+<!-- ============================================================ -->
+<script>
+// =============================================================
+// DATA STORE
+// =============================================================
+let trades = [];
+let studentIdCounter = 1;
+
+// Load from localStorage
+function loadData() {
+  const saved = localStorage.getItem('cardGameTrades');
+  if (saved) {
+    try {
+      trades = JSON.parse(saved);
+      studentIdCounter = trades.length + 1;
+      renderAll();
+    } catch(e) { trades = []; }
+  }
+}
+
+function saveData() {
+  localStorage.setItem('cardGameTrades', JSON.stringify(trades));
+}
+
+// =============================================================
+// CALCULATE METRICS
+// =============================================================
+function calculateSurplus(role, cardValue, tradePrice) {
+  if (role === 'Buyer') {
+    return cardValue - tradePrice;
+  } else {
+    return tradePrice - cardValue;
+  }
+}
+
+function getStats() {
+  const total = trades.length;
+  const buyers = trades.filter(t => t.role === 'Buyer').length;
+  const sellers = trades.filter(t => t.role === 'Seller').length;
+  const traded = trades.filter(t => t.tradePrice > 0).length;
+  const noTrade = trades.filter(t => t.tradePrice === 0).length;
+  const prices = trades.filter(t => t.tradePrice > 0).map(t => t.tradePrice);
+  const avgPrice = prices.length > 0 ? prices.reduce((a,b) => a + b, 0) / prices.length : 0;
+  const surplus = trades.filter(t => t.tradePrice > 0).map(t => t.surplus || calculateSurplus(t.role, t.cardValue, t.tradePrice));
+  const avgSurplus = surplus.length > 0 ? surplus.reduce((a,b) => a + b, 0) / surplus.length : 0;
+
+  // Equilibrium Price: median of all trade prices
+  const sorted = [...prices].sort((a,b) => a - b);
+  const equilibrium = sorted.length > 0 ? sorted[Math.floor(sorted.length/2)] : 0;
+
+  return { total, buyers, sellers, traded, noTrade, avgPrice, avgSurplus, equilibrium, prices, surplus };
+}
+
+// =============================================================
+// TAB SWITCHING
+// =============================================================
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    document.querySelectorAll('.dashboard').forEach(d => d.classList.remove('active'));
+    document.getElementById(this.dataset.tab).classList.add('active');
+  });
+});
+
+// =============================================================
+// ADD TRADE
+// =============================================================
+function addTrade() {
+  const id = document.getElementById('newStudentId').value.trim() || ('S' + String(studentIdCounter).padStart(3,'0'));
+  const name = document.getElementById('newStudentName').value.trim() || ('Student ' + studentIdCounter);
+  const role = document.getElementById('newRole').value;
+  const cardValue = parseInt(document.getElementById('newCardValue').value) || 5;
+  const tradePrice = parseInt(document.getElementById('newTradePrice').value) || 0;
+  const partner = document.getElementById('newPartner').value.trim() || '';
+  const round = parseInt(document.getElementById('newRound').value) || 1;
+
+  // Check for duplicate ID
+  if (trades.some(t => t.id === id && t.round === round)) {
+    if (!confirm('Student ' + id + ' already has a trade in Round ' + round + '. Overwrite?')) return;
+    trades = trades.filter(t => !(t.id === id && t.round === round));
+  }
+
+  const surplus = calculateSurplus(role, cardValue, tradePrice);
+
+  const trade = { id, name, role, cardValue, tradePrice, partner, round, surplus };
+  trades.push(trade);
+  studentIdCounter++;
+  saveData();
+  renderAll();
+  clearTradeForm();
+  alert('✅ Trade recorded for ' + id + '!');
+}
+
+function clearTradeForm() {
+  document.getElementById('newStudentId').value = 'S' + String(studentIdCounter).padStart(3,'0');
+  document.getElementById('newStudentName').value = '';
+  document.getElementById('newRole').value = 'Buyer';
+  document.getElementById('newCardValue').value = '5';
+  document.getElementById('newTradePrice').value = '4';
+  document.getElementById('newPartner').value = '';
+  document.getElementById('newRound').value = '1';
+  updateSurplusPreview();
+}
+
+function updateSurplusPreview() {
+  const role = document.getElementById('newRole').value;
+  const cardValue = parseInt(document.getElementById('newCardValue').value) || 0;
+  const tradePrice = parseInt(document.getElementById('newTradePrice').value) || 0;
+  const surplus = calculateSurplus(role, cardValue, tradePrice);
+  const preview = document.getElementById('surplusPreview');
+  if (surplus > 0) {
+    preview.innerHTML = '✅ Surplus: ₹' + surplus;
+    preview.style.color = '#28a745';
+  } else if (surplus < 0) {
+    preview.innerHTML = '⚠️ Negative Surplus: ₹' + surplus;
+    preview.style.color = '#dc3545';
+  } else {
+    preview.innerHTML = 'No Surplus';
+    preview.style.color = '#666';
+  }
+}
+
+// Auto-update preview
+document.getElementById('newRole').addEventListener('change', updateSurplusPreview);
+document.getElementById('newCardValue').addEventListener('input', updateSurplusPreview);
+document.getElementById('newTradePrice').addEventListener('input', updateSurplusPreview);
+
+// =============================================================
+// BULK IMPORT
+// =============================================================
+function bulkImportTrades() {
+  const text = document.getElementById('bulkImport').value.trim();
+  if (!text) { alert('Please paste trade data'); return; }
+  const lines = text.split('\n');
+  let added = 0;
+  lines.forEach(line => {
+    const parts = line.split(',').map(s => s.trim());
+    if (parts.length >= 7) {
+      const trade = {
+        id: parts[0] || ('S' + String(studentIdCounter).padStart(3,'0')),
+        name: parts[1] || ('Student ' + studentIdCounter),
+        role: parts[2] || 'Buyer',
+        cardValue: parseInt(parts[3]) || 5,
+        tradePrice: parseInt(parts[4]) || 0,
+        partner: parts[5] || '',
+        round: parseInt(parts[6]) || 1,
+        surplus: 0
+      };
+      trade.surplus = calculateSurplus(trade.role, trade.cardValue, trade.tradePrice);
+      trades.push(trade);
+      studentIdCounter++;
+      added++;
+    }
+  });
+  saveData();
+  renderAll();
+  alert('✅ Imported ' + added + ' trades!');
+}
+
+// =============================================================
+// RENDER ALL
+// =============================================================
+function renderAll() {
+  renderSummary();
+  renderStudentTable();
+  renderMarketAnalysis();
+  renderRankings();
+  renderExportTable();
+  renderCharts();
+  updateCounters();
+  document.getElementById('newStudentId').value = 'S' + String(studentIdCounter).padStart(3,'0');
+  updateSurplusPreview();
+}
+
+function updateCounters() {
+  const stats = getStats();
+  document.getElementById('totalStudents').textContent = stats.total + ' Students';
+  document.getElementById('tradedStudents').textContent = stats.traded + ' Traded';
+  document.getElementById('notradedStudents').textContent = stats.noTrade + ' No Trade';
+  document.getElementById('avgSurplus').textContent = '₹' + stats.avgSurplus.toFixed(2);
+}
+
+// =============================================================
+// RENDER SUMMARY
+// =============================================================
+function renderSummary() {
+  const stats = getStats();
+  document.getElementById('sumTotal').textContent = stats.total;
+  document.getElementById('sumBuyers').textContent = stats.buyers;
+  document.getElementById('sumSellers').textContent = stats.sellers;
+  document.getElementById('sumTrades').textContent = stats.traded;
+  document.getElementById('sumAvgPrice').textContent = '₹' + stats.avgPrice.toFixed(2);
+  document.getElementById('sumEquilibrium').textContent = '₹' + stats.equilibrium.toFixed(2);
+
+  const pct = stats.total > 0 ? Math.round((stats.traded/stats.total)*100) : 0;
+  document.getElementById('completionBar').style.width = pct + '%';
+  document.getElementById('completionPct').textContent = pct + '%';
+}
+
+// =============================================================
+// RENDER STUDENT TABLE
+// =============================================================
+function renderStudentTable(filtered) {
+  const data = filtered || trades;
+  const tbody = document.getElementById('studentTable');
+  tbody.innerHTML = '';
+  data.forEach((t, i) => {
+    const status = t.tradePrice > 0 ? '✅ Traded' : '❌ No Trade';
+    const statusClass = t.tradePrice > 0 ? 'status-traded' : 'status-notraded';
+    const rowClass = t.role === 'Buyer' ? 'buyer-row' : 'seller-row';
+    const surplus = t.surplus || calculateSurplus(t.role, t.cardValue, t.tradePrice);
+    const row = document.createElement('tr');
+    row.className = rowClass;
+    row.innerHTML = `
+      <td>${i+1}</td>
+      <td><span class="student-badge ${t.role === 'Buyer' ? 'badge-buyer' : 'badge-seller'}">${t.id}</span></td>
+      <td>${t.name}</td>
+      <td>${t.role}</td>
+      <td>${t.cardValue}</td>
+      <td>${t.tradePrice > 0 ? '₹' + t.tradePrice : '-'}</td>
+      <td class="${surplus > 0 ? 'highlight-green' : surplus < 0 ? 'highlight-red' : ''}">${surplus > 0 ? '+₹' : '₹'}${surplus}</td>
+      <td>${t.partner || '-'}</td>
+      <td>${t.round}</td>
+      <td class="${statusClass}">${status}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+// =============================================================
+// FILTER STUDENTS
+// =============================================================
+function filterStudents() {
+  const search = document.getElementById('searchStudent').value.toLowerCase();
+  const roleFilter = document.getElementById('filterRole').value;
+  const tradeFilter = document.getElementById('filterTradeStatus').value;
+
+  let filtered = trades.filter(t => {
+    const matchSearch = t.id.toLowerCase().includes(search) || t.name.toLowerCase().includes(search);
+    let matchRole = true;
+    if (roleFilter !== 'all') matchRole = t.role === roleFilter;
+    let matchTrade = true;
+    if (tradeFilter === 'traded') matchTrade = t.tradePrice > 0;
+    else if (tradeFilter === 'notraded') matchTrade = t.tradePrice === 0;
+    return matchSearch && matchRole && matchTrade;
+  });
+  renderStudentTable(filtered);
+}
+
+function resetFilters() {
+  document.getElementById('searchStudent').value = '';
+  document.getElementById('filterRole').value = 'all';
+  document.getElementById('filterTradeStatus').value = 'all';
+  renderStudentTable();
+}
+
+// =============================================================
+// RENDER MARKET ANALYSIS
+// =============================================================
+function renderMarketAnalysis() {
+  const stats = getStats();
+  const tradedTrades = trades.filter(t => t.tradePrice > 0);
+  const rounds = [...new Set(tradedTrades.map(t => t.round))].sort((a,b) => a - b);
+
+  const tbody = document.getElementById('marketTable');
+  tbody.innerHTML = '';
+  let totalSurplus = 0, consumerSurplus = 0, producerSurplus = 0;
+
+  rounds.forEach(r => {
+    const roundTrades = tradedTrades.filter(t => t.round === r);
+    const prices = roundTrades.map(t => t.tradePrice);
+    const avg = prices.length > 0 ? prices.reduce((a,b) => a + b, 0) / prices.length : 0;
+    const min = prices.length > 0 ? Math.min(...prices) : 0;
+    const max = prices.length > 0 ? Math.max(...prices) : 0;
+    const sorted = [...prices].sort((a,b) => a - b);
+    const median = sorted.length > 0 ? sorted[Math.floor(sorted.length/2)] : 0;
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td><strong>Round ${r}</strong></td>
+      <td>${roundTrades.length}</td>
+      <td>₹${avg.toFixed(2)}</td>
+      <td>₹${min}</td>
+      <td>₹${max}</td>
+      <td>₹${median}</td>
+    `;
+    tbody.appendChild(row);
+
+    roundTrades.forEach(t => {
+      const s = t.surplus || calculateSurplus(t.role, t.cardValue, t.tradePrice);
+      totalSurplus += s;
+      if (t.role === 'Buyer') consumerSurplus += s;
+      else producerSurplus += s;
+    });
+  });
+
+  document.getElementById('marketTotalSurplus').textContent = '₹' + totalSurplus.toFixed(2);
+  document.getElementById('marketConsumerSurplus').textContent = '₹' + consumerSurplus.toFixed(2);
+  document.getElementById('marketProducerSurplus').textContent = '₹' + producerSurplus.toFixed(2);
+  document.getElementById('marketEquilibrium').textContent = '₹' + stats.equilibrium.toFixed(2);
+
+  // Distribution Table
+  const distBody = document.getElementById('distributionTable');
+  distBody.innerHTML = '';
+  for (let i = 1; i <= 10; i++) {
+    const buyers = trades.filter(t => t.role === 'Buyer' && t.cardValue === i).length;
+    const sellers = trades.filter(t => t.role === 'Seller' && t.cardValue === i).length;
+    const net = buyers - sellers;
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${i}</td>
+      <td>${buyers}</td>
+      <td>${sellers}</td>
+      <td class="${net > 0 ? 'highlight-green' : net < 0 ? 'highlight-red' : ''}">${net > 0 ? '+' : ''}${net}</td>
+    `;
+    distBody.appendChild(row);
+  }
+}
+
+// =============================================================
+// RENDER RANKINGS
+// =============================================================
+function renderRankings() {
+  const tbody = document.getElementById('rankingsTable');
+  tbody.innerHTML = '';
+  if (trades.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="10">No data available</td></tr>';
+    document.getElementById('rankTop').textContent = '-';
+    document.getElementById('rankTopSurplus').textContent = '₹0';
+    document.getElementById('rankTopBuyer').textContent = '-';
+    document.getElementById('rankTopSeller').textContent = '-';
+    return;
+  }
+
+  const ranked = trades.map(t => ({
+    ...t,
+    surplus: t.surplus || calculateSurplus(t.role, t.cardValue, t.tradePrice)
+  })).filter(t => t.tradePrice > 0).sort((a,b) => b.surplus - a.surplus);
+
+  ranked.forEach((t, i) => {
+    const row = document.createElement('tr');
+    let rankClass = '';
+    if (i === 0) rankClass = 'rank-1';
+    else if (i === 1) rankClass = 'rank-2';
+    else if (i === 2) rankClass = 'rank-3';
+    row.className = rankClass;
+    row.innerHTML = `
+      <td><strong>${i+1}</strong></td>
+      <td><span class="student-badge ${t.role === 'Buyer' ? 'badge-buyer' : 'badge-seller'}">${t.id}</span></td>
+      <td>${t.name}</td>
+      <td>${t.role}</td>
+      <td>${t.cardValue}</td>
+      <td>₹${t.tradePrice}</td>
+      <td class="${t.surplus > 0 ? 'highlight-green' : 'highlight-red'}">+₹${t.surplus}</td>
+      <td>${t.partner || '-'}</td>
+      <td>${t.round}</td>
+      <td>${t.role === 'Buyer' ? 'Consumer' : 'Producer'}</td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  if (ranked.length > 0) {
+    document.getElementById('rankTop').textContent = ranked[0].id;
+    document.getElementById('rankTopSurplus').textContent = '+₹' + ranked[0].surplus;
+  }
+  const topBuyer = trades.filter(t => t.role === 'Buyer' && t.tradePrice > 0)
+    .sort((a,b) => (b.surplus || calculateSurplus(b.role, b.cardValue, b.tradePrice)) - (a.surplus || calculateSurplus(a.role, a.cardValue, a.tradePrice)));
+  const topSeller = trades.filter(t => t.role === 'Seller' && t.tradePrice > 0)
+    .sort((a,b) => (b.surplus || calculateSurplus(b.role, b.cardValue, b.tradePrice)) - (a.surplus || calculateSurplus(a.role, a.cardValue, a.tradePrice)));
+  document.getElementById('rankTopBuyer').textContent = topBuyer.length > 0 ? topBuyer[0].id : '-';
+  document.getElementById('rankTopSeller').textContent = topSeller.length > 0 ? topSeller[0].id : '-';
+}
+
+// =============================================================
+// RENDER EXPORT TABLE
+// =============================================================
+function renderExportTable() {
+  const tbody = document.getElementById('exportTable');
+  tbody.innerHTML = '';
+  trades.forEach(t => {
+    const surplus = t.surplus || calculateSurplus(t.role, t.cardValue, t.tradePrice);
+    const status = t.tradePrice > 0 ? '✅ Traded' : '❌ No Trade';
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td><span class="student-badge ${t.role === 'Buyer' ? 'badge-buyer' : 'badge-seller'}">${t.id}</span></td>
+      <td>${t.name}</td>
+      <td>${t.role}</td>
+      <td>${t.cardValue}</td>
+      <td>${t.tradePrice > 0 ? '₹' + t.tradePrice : '-'}</td>
+      <td class="${surplus > 0 ? 'highlight-green' : surplus < 0 ? 'highlight-red' : ''}">${surplus > 0 ? '+₹' : '₹'}${surplus}</td>
+      <td>${t.partner || '-'}</td>
+      <td>${t.round}</td>
+      <td>${status}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+// =============================================================
+// RENDER CHARTS
+// =============================================================
+function renderCharts() {
+  const traded = trades.filter(t => t.tradePrice > 0);
+  // Consumer Surplus Chart
+  const csData = [0,0,0,0,0,0,0,0,0,0];
+  const psData = [0,0,0,0,0,0,0,0,0,0];
+  traded.forEach(t => {
+    const s = t.surplus || calculateSurplus(t.role, t.cardValue, t.tradePrice);
+    const idx = Math.min(Math.max(Math.floor(s/2), 0), 9);
+    if (t.role === 'Buyer') csData[idx] = (csData[idx] || 0) + 1;
+    else psData[idx] = (psData[idx] || 0) + 1;
+  });
+
+  // CS Chart
+  const csChart = document.getElementById('csChart');
+  csChart.innerHTML = '';
+  const csMax = Math.max(...csData, 1);
+  csData.forEach((val, i) => {
+    const div = document.createElement('div');
+    div.className = 'bar';
+    div.innerHTML = `
+      <div class="bar-fill" style="height:${(val/csMax)*120}px;background:#1E4D7B;"></div>
+      <div class="bar-label">${i*2}-${i*2+2}</div>
+    `;
+    csChart.appendChild(div);
+  });
+
+  // PS Chart
+  const psChart = document.getElementById('psChart');
+  psChart.innerHTML = '';
+  const psMax = Math.max(...psData, 1);
+  psData.forEach((val, i) => {
+    const div = document.createElement('div');
+    div.className = 'bar';
+    div.innerHTML = `
+      <div class="bar-fill" style="height:${(val/psMax)*120}px;background:#dc3545;"></div>
+      <div class="bar-label">${i*2}-${i*2+2}</div>
+    `;
+    psChart.appendChild(div);
+  });
+}
+
+// =============================================================
+// EXPORT FUNCTIONS
+// =============================================================
+function exportCSV() {
+  if (trades.length === 0) { alert('No data to export'); return; }
+  let csv = 'StudentID,Name,Role,CardValue,TradePrice,Surplus,Partner,Round,Status\n';
+  trades.forEach(t => {
+    const surplus = t.surplus || calculateSurplus(t.role, t.cardValue, t.tradePrice);
+    csv += [
+      t.id, t.name, t.role, t.cardValue, t.tradePrice,
+      surplus, t.partner || '', t.round,
+      t.tradePrice > 0 ? 'Traded' : 'No Trade'
+    ].join(',') + '\n';
+  });
+  downloadFile(csv, 'card_game_data.csv', 'text/csv');
+}
+
+function exportJSON() {
+  if (trades.length === 0) { alert('No data to export'); return; }
+  const json = JSON.stringify(trades, null, 2);
+  downloadFile(json, 'card_game_data.json', 'application/json');
+}
+
+function copyToClipboard() {
+  if (trades.length === 0) { alert('No data to copy'); return; }
+  const text = trades.map(t => {
+    const surplus = t.surplus || calculateSurplus(t.role, t.cardValue, t.tradePrice);
+    return `${t.id},${t.name},${t.role},${t.cardValue},${t.tradePrice},${surplus},${t.partner||''},${t.round}`;
+  }).join('\n');
+  navigator.clipboard.writeText(text).then(() => alert('✅ Copied to clipboard!'));
+}
+
+function downloadFile(content, filename, mimeType) {
+  const blob = new Blob([content], { type: mimeType + ';charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+function clearAllData() {
+  if (confirm('⚠️ Delete ALL trade data? This cannot be undone.')) {
+    trades = [];
+    studentIdCounter = 1;
+    saveData();
+    renderAll();
+    alert('All data cleared.');
+  }
+}
+
+// =============================================================
+// INITIALIZE WITH SAMPLE DATA
+// =============================================================
+function initSampleData() {
+  const sampleTrades = [
+    { id: 'S001', name: 'Aarav Sharma', role: 'Buyer', cardValue: 8, tradePrice: 5, partner: 'S011', round: 1, surplus: 3 },
+    { id: 'S002', name: 'Priya Patel', role: 'Buyer', cardValue: 9, tradePrice: 6, partner: 'S012', round: 1, surplus: 3 },
+    { id: 'S003', name: 'Rahul Singh', role: 'Buyer', cardValue: 7, tradePrice: 4, partner: 'S013', round: 1, surplus: 3 },
+    { id: 'S004', name: 'Sneha Reddy', role: 'Seller', cardValue: 3, tradePrice: 5, partner: 'S001', round: 1, surplus: 2 },
+    { id: 'S005', name: 'Vikram Kumar', role: 'Seller', cardValue: 4, tradePrice: 6, partner: 'S002', round: 1, surplus: 2 },
+    { id: 'S006', name: 'Ananya Gupta', role: 'Seller', cardValue: 2, tradePrice: 4, partner: 'S003', round: 1, surplus: 2 },
+    { id: 'S007', name: 'Arjun Nair', role: 'Buyer', cardValue: 6, tradePrice: 5, partner: 'S014', round: 2, surplus: 1 },
+    { id: 'S008', name: 'Meera Iyer', role: 'Seller', cardValue: 5, tradePrice: 5, partner: 'S007', round: 2, surplus: 0 },
+    { id: 'S009', name: 'Karan Joshi', role: 'Buyer', cardValue: 10, tradePrice: 7, partner: 'S015', round: 2, surplus: 3 },
+    { id: 'S010', name: 'Divya Menon', role: 'Seller', cardValue: 2, tradePrice: 7, partner: 'S009', round: 2, surplus: 5 }
+  ];
+  trades = sampleTrades;
+  studentIdCounter = 11;
+  saveData();
+  renderAll();
+}
+
+// =============================================================
+// AUTO-SAVE & LOAD
+// =============================================================
+setInterval(saveData, 5000);
+
+loadData();
+if (trades.length === 0) {
+  initSampleData();
+} else {
+  renderAll();
+}
+
+console.log('🎴 Card Game Dashboard loaded!');
+console.log('📊 Trades:', trades.length);
+</script>
+
+</body>
+</html>

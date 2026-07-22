@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏢 Scarcity Challenge – 100 Student Dashboard</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; }
+.container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+/* Header */
+.header { background: linear-gradient(135deg, #1E4D7B, #2E6BAE); color: white; padding: 25px 30px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+.header h1 { font-size: 28px; }
+.header .subtitle { opacity: 0.8; font-size: 16px; }
+.header .badge { background: #F5A623; color: #1E4D7B; padding: 6px 16px; border-radius: 20px; font-weight: 700; font-size: 14px; margin: 4px; }
+.header .badge.green { background: #28a745; color: white; }
+.header .badge.red { background: #dc3545; color: white; }
+
+/* Tabs */
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; background: white; padding: 12px 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+.tab-btn { padding: 10px 22px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.3s; background: #e9ecef; color: #495057; }
+.tab-btn:hover { background: #dee2e6; }
+.tab-btn.active { background: #1E4D7B; color: white; }
+.tab-btn .count { background: rgba(255,255,255,0.3); padding: 1px 10px; border-radius: 12px; font-size: 11px; margin-left: 6px; }
+.tab-btn.active .count { background: rgba(255,255,255,0.3); }
+
+/* Dashboard Panels */
+.dashboard { display: none; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+.dashboard.active { display: block; }
+.dashboard-title { font-size: 22px; font-weight: 700; color: #1E4D7B; margin-bottom: 15px; border-bottom: 3px solid #F5A623; padding-bottom: 10px; }
+
+/* Stats Grid */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin: 15px 0; }
+.stat-card { background: #f8f9fa; padding: 14px; border-radius: 8px; text-align: center; border-left: 4px solid #1E4D7B; transition: 0.3s; }
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.stat-card .number { font-size: 26px; font-weight: 700; color: #1E4D7B; }
+.stat-card .label { font-size: 12px; color: #666; margin-top: 4px; }
+.stat-card.green { border-left-color: #28a745; }
+.stat-card.orange { border-left-color: #fd7e14; }
+.stat-card.red { border-left-color: #dc3545; }
+.stat-card.purple { border-left-color: #6f42c1; }
+.stat-card.gold { border-left-color: #F5A623; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; margin: 15px 0; max-height: 500px; overflow-y: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+table th { background: #1E4D7B; color: white; padding: 10px 12px; text-align: center; position: sticky; top: 0; z-index: 10; white-space: nowrap; }
+table td { padding: 8px 10px; border: 1px solid #ddd; text-align: center; }
+table tr:nth-child(even) { background: #f8f9fa; }
+table tr:hover { background: #e3f2fd; }
+table .highlight-green { background: #d4edda !important; }
+table .highlight-red { background: #f8d7da !important; }
+table .highlight-gold { background: #fff3cd !important; }
+table .rank-1 { background: #FFD700 !important; font-weight: 700; }
+table .rank-2 { background: #C0C0C0 !important; font-weight: 700; }
+table .rank-3 { background: #CD7F32 !important; color: white; font-weight: 700; }
+
+/* Student Entry Form */
+.entry-form { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 15px 0; border: 2px dashed #dee2e6; }
+.entry-form h4 { color: #1E4D7B; margin-bottom: 12px; }
+.entry-form .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+
+/* Objectives Selection */
+.objective-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; margin: 10px 0; }
+.objective-item { background: white; padding: 10px 14px; border-radius: 6px; border: 2px solid #ddd; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.3s; }
+.objective-item:hover { border-color: #1E4D7B; }
+.objective-item.selected { border-color: #28a745; background: #d4edda; }
+.objective-item .name { font-weight: 600; }
+.objective-item .details { font-size: 12px; color: #666; }
+.objective-item .toggle { font-size: 20px; font-weight: 700; color: #999; }
+.objective-item.selected .toggle { color: #28a745; }
+.objective-item .rev { color: #1E4D7B; font-weight: 700; }
+
+/* Buttons */
+.btn { padding: 8px 20px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+.btn-primary { background: #1E4D7B; color: white; }
+.btn-primary:hover { background: #2E6BAE; }
+.btn-success { background: #28a745; color: white; }
+.btn-success:hover { background: #218838; }
+.btn-danger { background: #dc3545; color: white; }
+.btn-danger:hover { background: #c82333; }
+.btn-warning { background: #ffc107; color: #333; }
+.btn-warning:hover { background: #e0a800; }
+.btn-outline { background: transparent; border: 2px solid #1E4D7B; color: #1E4D7B; }
+.btn-outline:hover { background: #1E4D7B; color: white; }
+.btn-sm { padding: 5px 14px; font-size: 12px; }
+
+/* Inputs */
+.input-group { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; align-items: center; }
+.input-group input, .input-group select { padding: 8px 14px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; flex: 1; min-width: 120px; }
+.input-group input:focus, .input-group select:focus { border-color: #1E4D7B; outline: none; box-shadow: 0 0 0 2px rgba(30,77,123,0.2); }
+
+/* Progress Bar */
+.progress-bar { height: 8px; background: #e9ecef; border-radius: 4px; overflow: hidden; margin: 10px 0; }
+.progress-bar .fill { height: 100%; background: linear-gradient(90deg, #28a745, #F5A623); border-radius: 4px; transition: width 0.5s; }
+
+/* Student Badge */
+.student-badge { display: inline-block; background: #1E4D7B; color: white; padding: 2px 12px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+.status-feasible { color: #28a745; font-weight: 700; }
+.status-overspent { color: #dc3545; font-weight: 700; }
+
+/* Export Bar */
+.export-bar { display: flex; gap: 10px; flex-wrap: wrap; margin: 15px 0; padding: 15px; background: #f8f9fa; border-radius: 8px; align-items: center; }
+.export-bar span { font-weight: 600; color: #1E4D7B; }
+
+/* Tooltip */
+.tooltip { position: relative; cursor: help; border-bottom: 1px dotted #999; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header h1 { font-size: 20px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .tab-btn { padding: 8px 14px; font-size: 12px; }
+  .dashboard { padding: 15px; }
+  .objective-grid { grid-template-columns: 1fr; }
+}
+
+/* Modal */
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+.modal.active { display: flex; }
+.modal-content { background: white; padding: 30px; border-radius: 12px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
+.modal-content h3 { color: #1E4D7B; margin-bottom: 15px; }
+.modal-content .close { float: right; font-size: 24px; cursor: pointer; color: #999; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <h1>🏢 The Scarcity Challenge</h1>
+    <div class="subtitle">NovaTech Startup Simulation – 100 Student Dashboard</div>
+  </div>
+  <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+    <span class="badge" id="totalStudents">0 Students</span>
+    <span class="badge green" id="feasibleStudents">0 Feasible</span>
+    <span class="badge red" id="overspentStudents">0 Overspent</span>
+    <span class="badge" id="avgEfficiency">0.0x</span>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" data-tab="tabSummary">📊 Summary Dashboard</button>
+  <button class="tab-btn" data-tab="tabStudents">👥 Student Tracker</button>
+  <button class="tab-btn" data-tab="tabAdd">➕ Add Student Data</button>
+  <button class="tab-btn" data-tab="tabRankings">🏆 Rankings</button>
+  <button class="tab-btn" data-tab="tabExport">📤 Export</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 1: SUMMARY DASHBOARD -->
+<!-- ============================================================ -->
+<div class="dashboard active" id="tabSummary">
+  <div class="dashboard-title">📊 Summary Dashboard</div>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="number" id="sumTotal">0</div><div class="label">Total Students</div></div>
+    <div class="stat-card green"><div class="number" id="sumFeasible">0</div><div class="label">Feasible Plans</div></div>
+    <div class="stat-card red"><div class="number" id="sumOverspent">0</div><div class="label">Overspent</div></div>
+    <div class="stat-card gold"><div class="number" id="sumAvgEfficiency">0.00x</div><div class="label">Avg Efficiency</div></div>
+    <div class="stat-card purple"><div class="number" id="sumMaxEfficiency">0.00x</div><div class="label">Highest Efficiency</div></div>
+    <div class="stat-card orange"><div class="number" id="sumAvgRevenue">₹0</div><div class="label">Avg Revenue</div></div>
+  </div>
+
+  <div class="progress-bar"><div class="fill" id="completionBar" style="width:0%"></div></div>
+  <p style="text-align:center; font-size:13px; color:#666;">Class Feasibility: <span id="completionPct">0%</span></p>
+
+  <h4 style="color:#1E4D7B; margin:15px 0 10px;">📈 Most Selected Objectives</h4>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Rank</th><th>Objective</th><th># of Students</th><th>% of Class</th></tr></thead>
+      <tbody id="objectivesTable"></tbody>
+    </table>
+  </div>
+
+  <h4 style="color:#1E4D7B; margin:15px 0 10px;">📊 Resource Usage Summary</h4>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Resource</th><th>Avg Used</th><th>Max Used</th><th>Available</th><th>Utilization</th></tr></thead>
+      <tbody id="resourceTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 2: STUDENT TRACKER -->
+<!-- ============================================================ -->
+<div class="dashboard" id="tabStudents">
+  <div class="dashboard-title">👥 Student Tracker</div>
+
+  <div class="input-group">
+    <input type="text" id="searchStudent" placeholder="Search by Student ID or Name..." oninput="filterStudents()">
+    <select id="filterStatus" onchange="filterStudents()">
+      <option value="all">All Students</option>
+      <option value="feasible">Feasible</option>
+      <option value="overspent">Overspent</option>
+    </select>
+    <select id="filterObjective" onchange="filterStudents()">
+      <option value="all">All Objectives</option>
+      <option value="Product Development">Product Development</option>
+      <option value="Market Research">Market Research</option>
+      <option value="Marketing Campaign">Marketing Campaign</option>
+      <option value="Operations Setup">Operations Setup</option>
+      <option value="AI Integration">AI Integration</option>
+      <option value="Talent Development">Talent Development</option>
+      <option value="Partnerships">Partnerships</option>
+    </select>
+    <button class="btn btn-primary btn-sm" onclick="resetFilters()">Reset</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>#</th>
+        <th>Student ID</th>
+        <th>Name</th>
+        <th>Revenue</th>
+        <th>Objectives</th>
+        <th>Efficiency</th>
+        <th>Capital Used</th>
+        <th>Status</th>
+        <th>Selected</th>
+        <th>Opp. Cost</th>
+      </tr></thead>
+      <tbody id="studentTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 3: ADD STUDENT DATA -->
+<!-- ============================================================ -->
+<div class="dashboard" id="tabAdd">
+  <div class="dashboard-title">➕ Add Student Data</div>
+
+  <div class="entry-form">
+    <h4>📝 Student Entry Form</h4>
+    <p style="color:#666; font-size:14px; margin-bottom:12px;">Select which objectives the student chooses (Yes/No). Budget: ₹100, Capital, 5 Talent, 6 Months, 3 Focus.</p>
+
+    <div class="row">
+      <div>
+        <label>Student ID:</label>
+        <input type="text" id="newStudentId" placeholder="S001" value="S001">
+      </div>
+      <div>
+        <label>Student Name:</label>
+        <input type="text" id="newStudentName" placeholder="Enter name">
+      </div>
+    </div>
+
+    <div style="margin: 12px 0;">
+      <label style="font-weight:600;">Select Objectives (Click to toggle Yes/No):</label>
+      <div class="objective-grid" id="objectiveGrid">
+        <!-- Generated by JavaScript -->
+      </div>
+    </div>
+
+    <div style="display:flex; gap:15px; align-items:center; flex-wrap:wrap; margin-top:10px;">
+      <span id="resourceCheck" style="font-weight:700; font-size:14px;"></span>
+      <button class="btn btn-success" onclick="addStudent()">✅ Add Student</button>
+      <button class="btn btn-warning" onclick="clearStudentForm()">🔄 Clear</button>
+    </div>
+  </div>
+
+  <div style="margin-top:20px;">
+    <h4 style="color:#1E4D7B;">📥 Quick Add (Bulk)</h4>
+    <p style="font-size:14px; color:#666;">Format: StudentID,Name,ProdDev,MarketRes,Marketing,Ops,AI,TalentDev,Partnerships (1=Yes, 0=No)</p>
+    <textarea id="bulkImport" rows="4" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-family:monospace; font-size:13px;"></textarea>
+    <button class="btn btn-primary" onclick="bulkImport()" style="margin-top:8px;">📤 Import</button>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 4: RANKINGS -->
+<!-- ============================================================ -->
+<div class="dashboard" id="tabRankings">
+  <div class="dashboard-title">🏆 Student Rankings</div>
+
+  <div class="stats-grid">
+    <div class="stat-card gold"><div class="number" id="rankTop">-</div><div class="label">Top Performer</div></div>
+    <div class="stat-card green"><div class="number" id="rankTopScore">0.00x</div><div class="label">Top Efficiency</div></div>
+    <div class="stat-card purple"><div class="number" id="rankTopRevenue">₹0</div><div class="label">Top Revenue</div></div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Rank</th>
+        <th>Student ID</th>
+        <th>Name</th>
+        <th>Efficiency</th>
+        <th>Revenue</th>
+        <th>Status</th>
+        <th>Selected</th>
+        <th>Capital Used</th>
+        <th>Opportunity Cost</th>
+      </tr></thead>
+      <tbody id="rankingsTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 5: EXPORT -->
+<!-- ============================================================ -->
+<div class="dashboard" id="tabExport">
+  <div class="dashboard-title">📤 Export Data</div>
+
+  <div class="export-bar">
+    <span>📊 Export Options:</span>
+    <button class="btn btn-success" onclick="exportCSV()">📥 Download CSV</button>
+    <button class="btn btn-primary" onclick="exportJSON()">📥 Download JSON</button>
+    <button class="btn btn-warning" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+    <button class="btn btn-danger" onclick="clearAllData()">🗑️ Clear All Data</button>
+  </div>
+
+  <div style="margin-top:15px;">
+    <h4 style="color:#1E4D7B;">📋 Data Preview (All Students)</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>ID</th><th>Name</th>
+          <th>Prod Dev</th><th>Market Res</th><th>Marketing</th><th>Ops</th><th>AI</th><th>Talent</th><th>Partnerships</th>
+          <th>Revenue</th><th>Efficiency</th><th>Status</th>
+        </tr></thead>
+        <tbody id="exportTable"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- JAVASCRIPT – All Logic -->
+<!-- ============================================================ -->
+<script>
+// =============================================================
+// DATA STORE
+// =============================================================
+let students = [];
+let studentIdCounter = 1;
+
+// Objective Configuration
+const OBJECTIVES = [
+  { key: 'prodDev', name: 'Product Development', capital: 40, talent: 2, months: 3, focus: 2, revenue: 80 },
+  { key: 'marketRes', name: 'Market Research', capital: 20, talent: 1, months: 2, focus: 1, revenue: 40 },
+  { key: 'marketing', name: 'Marketing Campaign', capital: 30, talent: 1, months: 2, focus: 1, revenue: 60 },
+  { key: 'ops', name: 'Operations Setup', capital: 25, talent: 1, months: 2, focus: 1, revenue: 50 },
+  { key: 'ai', name: 'AI Integration', capital: 45, talent: 2, months: 3, focus: 2, revenue: 100 },
+  { key: 'talentDev', name: 'Talent Development', capital: 15, talent: 1, months: 1, focus: 1, revenue: 30 },
+  { key: 'partnerships', name: 'Partnerships', capital: 20, talent: 1, months: 2, focus: 1, revenue: 60 }
+];
+
+const RESOURCES = {
+  capital: { max: 100, label: 'Capital (₹)' },
+  talent: { max: 5, label: 'Talent' },
+  months: { max: 6, label: 'Time (Months)' },
+  focus: { max: 3, label: 'Focus' }
+};
+
+// Load from localStorage
+function loadData() {
+  const saved = localStorage.getItem('scarcityChallengeStudents');
+  if (saved) {
+    try {
+      students = JSON.parse(saved);
+      studentIdCounter = students.length + 1;
+      renderAll();
+    } catch(e) { students = []; }
+  }
+}
+
+function saveData() {
+  localStorage.setItem('scarcityChallengeStudents', JSON.stringify(students));
+}
+
+// =============================================================
+// CALCULATE STUDENT METRICS
+// =============================================================
+function calculateMetrics(student) {
+  let totalCapital = 0, totalTalent = 0, totalMonths = 0, totalFocus = 0, totalRevenue = 0;
+  let selectedCount = 0;
+  const selectedObj = [];
+
+  OBJECTIVES.forEach(obj => {
+    if (student[obj.key] === 1) {
+      totalCapital += obj.capital;
+      totalTalent += obj.talent;
+      totalMonths += obj.months;
+      totalFocus += obj.focus;
+      totalRevenue += obj.revenue;
+      selectedCount++;
+      selectedObj.push(obj.name);
+    }
+  });
+
+  const isFeasible = totalCapital <= 100 && totalTalent <= 5 && totalMonths <= 6 && totalFocus <= 3;
+  const efficiency = totalCapital > 0 ? totalRevenue / totalCapital : 0;
+
+  // Opportunity Cost: best unselected objective's revenue
+  let oppCost = 0;
+  OBJECTIVES.forEach(obj => {
+    if (student[obj.key] !== 1 && obj.revenue > oppCost) {
+      oppCost = obj.revenue;
+    }
+  });
+
+  return {
+    totalCapital, totalTalent, totalMonths, totalFocus, totalRevenue,
+    selectedCount, selectedObj, isFeasible, efficiency, oppCost
+  };
+}
+
+// =============================================================
+// TAB SWITCHING
+// =============================================================
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    document.querySelectorAll('.dashboard').forEach(d => d.classList.remove('active'));
+    document.getElementById(this.dataset.tab).classList.add('active');
+  });
+});
+
+// =============================================================
+// OBJECTIVE GRID
+// =============================================================
+function renderObjectiveGrid() {
+  const grid = document.getElementById('objectiveGrid');
+  grid.innerHTML = '';
+  OBJECTIVES.forEach(obj => {
+    const div = document.createElement('div');
+    div.className = 'objective-item';
+    div.dataset.key = obj.key;
+    div.innerHTML = `
+      <div>
+        <div class="name">${obj.name}</div>
+        <div class="details">₹${obj.capital} | ${obj.talent}T | ${obj.months}M | ${obj.focus}F</div>
+      </div>
+      <div>
+        <span class="rev">₹${obj.revenue}</span>
+        <span class="toggle">◻</span>
+      </div>
+    `;
+    div.addEventListener('click', function() {
+      const key = this.dataset.key;
+      const isSelected = this.classList.contains('selected');
+      if (isSelected) {
+        this.classList.remove('selected');
+        this.querySelector('.toggle').textContent = '◻';
+      } else {
+        this.classList.add('selected');
+        this.querySelector('.toggle').textContent = '☑';
+      }
+      updateResourceCheck();
+    });
+    grid.appendChild(div);
+  });
+}
+
+function updateResourceCheck() {
+  let capital = 0, talent = 0, months = 0, focus = 0, revenue = 0;
+  document.querySelectorAll('.objective-item.selected').forEach(el => {
+    const key = el.dataset.key;
+    const obj = OBJECTIVES.find(o => o.key === key);
+    if (obj) {
+      capital += obj.capital;
+      talent += obj.talent;
+      months += obj.months;
+      focus += obj.focus;
+      revenue += obj.revenue;
+    }
+  });
+  const feasible = capital <= 100 && talent <= 5 && months <= 6 && focus <= 3;
+  document.getElementById('resourceCheck').innerHTML = `
+    💰 ₹${capital}/100 | 👥 ${talent}/5 | ⏰ ${months}/6 | 🎯 ${focus}/3 | 📊 ₹${revenue}
+    ${feasible ? ' ✅ Feasible' : ' ⚠️ Overspent'}
+  `;
+}
+
+// =============================================================
+// ADD STUDENT
+// =============================================================
+function addStudent() {
+  const id = document.getElementById('newStudentId').value.trim() || ('S' + String(studentIdCounter).padStart(3,'0'));
+  const name = document.getElementById('newStudentName').value.trim() || ('Student ' + studentIdCounter);
+
+  const data = { id, name };
+  let selectedCount = 0;
+  document.querySelectorAll('.objective-item.selected').forEach(el => {
+    data[el.dataset.key] = 1;
+    selectedCount++;
+  });
+  OBJECTIVES.forEach(obj => {
+    if (data[obj.key] === undefined) data[obj.key] = 0;
+  });
+
+  if (selectedCount === 0) {
+    alert('Please select at least one objective.');
+    return;
+  }
+
+  // Check for duplicate ID
+  if (students.some(s => s.id === data.id)) {
+    if (!confirm('Student ID ' + data.id + ' already exists. Overwrite?')) return;
+    students = students.filter(s => s.id !== data.id);
+  }
+
+  students.push(data);
+  studentIdCounter++;
+  saveData();
+  renderAll();
+  clearStudentForm();
+  alert('✅ Student ' + data.id + ' added successfully!');
+}
+
+function clearStudentForm() {
+  document.getElementById('newStudentId').value = 'S' + String(studentIdCounter).padStart(3,'0');
+  document.getElementById('newStudentName').value = '';
+  document.querySelectorAll('.objective-item').forEach(el => {
+    el.classList.remove('selected');
+    el.querySelector('.toggle').textContent = '◻';
+  });
+  updateResourceCheck();
+}
+
+// =============================================================
+// BULK IMPORT
+// =============================================================
+function bulkImport() {
+  const text = document.getElementById('bulkImport').value.trim();
+  if (!text) { alert('Please paste data'); return; }
+  const lines = text.split('\n');
+  let added = 0;
+  lines.forEach(line => {
+    const parts = line.split(',').map(s => s.trim());
+    if (parts.length >= 9) {
+      const data = {
+        id: parts[0] || ('S' + String(studentIdCounter).padStart(3,'0')),
+        name: parts[1] || ('Student ' + studentIdCounter),
+        prodDev: parseInt(parts[2]) || 0,
+        marketRes: parseInt(parts[3]) || 0,
+        marketing: parseInt(parts[4]) || 0,
+        ops: parseInt(parts[5]) || 0,
+        ai: parseInt(parts[6]) || 0,
+        talentDev: parseInt(parts[7]) || 0,
+        partnerships: parseInt(parts[8]) || 0
+      };
+      students.push(data);
+      studentIdCounter++;
+      added++;
+    }
+  });
+  saveData();
+  renderAll();
+  alert('✅ Imported ' + added + ' students!');
+}
+
+// =============================================================
+// RENDER ALL
+// =============================================================
+function renderAll() {
+  renderSummary();
+  renderStudentTable();
+  renderRankings();
+  renderExportTable();
+  renderObjectivesTable();
+  renderResourceTable();
+  updateCounters();
+  document.getElementById('newStudentId').value = 'S' + String(studentIdCounter).padStart(3,'0');
+  if (document.querySelectorAll('.objective-item').length === 0) {
+    renderObjectiveGrid();
+  }
+  updateResourceCheck();
+}
+
+function updateCounters() {
+  document.getElementById('totalStudents').textContent = students.length + ' Students';
+  const metrics = students.map(s => calculateMetrics(s));
+  const feasible = metrics.filter(m => m.isFeasible).length;
+  const overspent = metrics.filter(m => !m.isFeasible).length;
+  document.getElementById('feasibleStudents').textContent = feasible + ' Feasible';
+  document.getElementById('overspentStudents').textContent = overspent + ' Overspent';
+  const avgEff = students.length > 0 ? metrics.reduce((sum, m) => sum + m.efficiency, 0) / students.length : 0;
+  document.getElementById('avgEfficiency').textContent = avgEff.toFixed(2) + 'x';
+}
+
+// =============================================================
+// RENDER SUMMARY
+// =============================================================
+function renderSummary() {
+  const n = students.length;
+  const metrics = students.map(s => calculateMetrics(s));
+  const feasible = metrics.filter(m => m.isFeasible).length;
+  const overspent = metrics.filter(m => !m.isFeasible).length;
+  const avgEff = n > 0 ? metrics.reduce((sum, m) => sum + m.efficiency, 0) / n : 0;
+  const maxEff = n > 0 ? Math.max(...metrics.map(m => m.efficiency)) : 0;
+  const avgRev = n > 0 ? Math.round(metrics.reduce((sum, m) => sum + m.totalRevenue, 0) / n) : 0;
+
+  document.getElementById('sumTotal').textContent = n;
+  document.getElementById('sumFeasible').textContent = feasible;
+  document.getElementById('sumOverspent').textContent = overspent;
+  document.getElementById('sumAvgEfficiency').textContent = avgEff.toFixed(2) + 'x';
+  document.getElementById('sumMaxEfficiency').textContent = maxEff.toFixed(2) + 'x';
+  document.getElementById('sumAvgRevenue').textContent = '₹' + avgRev;
+
+  const pct = n > 0 ? Math.round((feasible/n)*100) : 0;
+  document.getElementById('completionBar').style.width = pct + '%';
+  document.getElementById('completionPct').textContent = pct + '%';
+}
+
+// =============================================================
+// RENDER OBJECTIVES TABLE
+// =============================================================
+function renderObjectivesTable() {
+  const counts = {};
+  OBJECTIVES.forEach(obj => counts[obj.name] = 0);
+  students.forEach(s => {
+    OBJECTIVES.forEach(obj => {
+      if (s[obj.key] === 1) counts[obj.name] = (counts[obj.name] || 0) + 1;
+    });
+  });
+  const sorted = Object.keys(counts).sort((a,b) => counts[b] - counts[a]);
+  const tbody = document.getElementById('objectivesTable');
+  tbody.innerHTML = '';
+  sorted.forEach((name, i) => {
+    if (counts[name] > 0) {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${i+1}</td>
+        <td>${name}</td>
+        <td>${counts[name]}</td>
+        <td>${students.length > 0 ? Math.round((counts[name]/students.length)*100) : 0}%</td>
+      `;
+      tbody.appendChild(row);
+    }
+  });
+}
+
+// =============================================================
+// RENDER RESOURCE TABLE
+// =============================================================
+function renderResourceTable() {
+  const n = students.length;
+  const tbody = document.getElementById('resourceTable');
+  tbody.innerHTML = '';
+  const resources = [
+    { key: 'totalCapital', label: 'Capital (₹)', max: 100 },
+    { key: 'totalTalent', label: 'Talent', max: 5 },
+    { key: 'totalMonths', label: 'Time (Months)', max: 6 },
+    { key: 'totalFocus', label: 'Focus', max: 3 }
+  ];
+  resources.forEach(res => {
+    const vals = students.map(s => calculateMetrics(s)[res.key]);
+    const avg = n > 0 ? Math.round(vals.reduce((a,b) => a + b, 0) / n) : 0;
+    const max = n > 0 ? Math.max(...vals) : 0;
+    const util = res.max > 0 ? Math.round((avg/res.max)*100) : 0;
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${res.label}</td>
+      <td>${avg}</td>
+      <td>${max}</td>
+      <td>${res.max}</td>
+      <td class="${util > 80 ? 'highlight-red' : 'highlight-green'}">${util}%</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+// =============================================================
+// RENDER STUDENT TABLE
+// =============================================================
+function renderStudentTable(filtered) {
+  const data = filtered || students;
+  const tbody = document.getElementById('studentTable');
+  tbody.innerHTML = '';
+  data.forEach((s, i) => {
+    const m = calculateMetrics(s);
+    const status = m.isFeasible ? '✅ Feasible' : '❌ Overspent';
+    const statusClass = m.isFeasible ? 'status-feasible' : 'status-overspent';
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${i+1}</td>
+      <td><span class="student-badge">${s.id}</span></td>
+      <td>${s.name}</td>
+      <td>₹${m.totalRevenue}</td>
+      <td>${m.selectedCount}</td>
+      <td class="${m.efficiency > 2 ? 'highlight-green' : ''}">${m.efficiency.toFixed(2)}x</td>
+      <td>₹${m.totalCapital}</td>
+      <td class="${statusClass}">${status}</td>
+      <td>${m.selectedObj.join(', ')}</td>
+      <td>₹${m.oppCost}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+// =============================================================
+// FILTER STUDENTS
+// =============================================================
+function filterStudents() {
+  const search = document.getElementById('searchStudent').value.toLowerCase();
+  const statusFilter = document.getElementById('filterStatus').value;
+  const objFilter = document.getElementById('filterObjective').value;
+
+  let filtered = students.filter(s => {
+    const matchSearch = s.id.toLowerCase().includes(search) || s.name.toLowerCase().includes(search);
+    const m = calculateMetrics(s);
+    let matchStatus = true;
+    if (statusFilter === 'feasible') matchStatus = m.isFeasible;
+    else if (statusFilter === 'overspent') matchStatus = !m.isFeasible;
+
+    let matchObj = true;
+    if (objFilter !== 'all') {
+      const objKey = OBJECTIVES.find(o => o.name === objFilter)?.key;
+      matchObj = objKey ? s[objKey] === 1 : true;
+    }
+    return matchSearch && matchStatus && matchObj;
+  });
+  renderStudentTable(filtered);
+}
+
+function resetFilters() {
+  document.getElementById('searchStudent').value = '';
+  document.getElementById('filterStatus').value = 'all';
+  document.getElementById('filterObjective').value = 'all';
+  renderStudentTable();
+}
+
+// =============================================================
+// RENDER RANKINGS
+// =============================================================
+function renderRankings() {
+  const tbody = document.getElementById('rankingsTable');
+  tbody.innerHTML = '';
+  if (students.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9">No data available</td></tr>';
+    document.getElementById('rankTop').textContent = '-';
+    document.getElementById('rankTopScore').textContent = '0.00x';
+    document.getElementById('rankTopRevenue').textContent = '₹0';
+    return;
+  }
+
+  const ranked = students.map(s => {
+    const m = calculateMetrics(s);
+    return { ...s, ...m };
+  }).sort((a,b) => b.efficiency - a.efficiency);
+
+  ranked.forEach((s, i) => {
+    const row = document.createElement('tr');
+    let rankClass = '';
+    if (i === 0) rankClass = 'rank-1';
+    else if (i === 1) rankClass = 'rank-2';
+    else if (i === 2) rankClass = 'rank-3';
+    row.className = rankClass;
+    row.innerHTML = `
+      <td><strong>${i+1}</strong></td>
+      <td><span class="student-badge">${s.id}</span></td>
+      <td>${s.name}</td>
+      <td>${s.efficiency.toFixed(2)}x</td>
+      <td>₹${s.totalRevenue}</td>
+      <td class="${s.isFeasible ? 'status-feasible' : 'status-overspent'}">${s.isFeasible ? '✅ Feasible' : '❌ Overspent'}</td>
+      <td>${s.selectedCount}</td>
+      <td>₹${s.totalCapital}</td>
+      <td>₹${s.oppCost}</td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  if (ranked.length > 0) {
+    document.getElementById('rankTop').textContent = ranked[0].id;
+    document.getElementById('rankTopScore').textContent = ranked[0].efficiency.toFixed(2) + 'x';
+    document.getElementById('rankTopRevenue').textContent = '₹' + ranked[0].totalRevenue;
+  }
+}
+
+// =============================================================
+// RENDER EXPORT TABLE
+// =============================================================
+function renderExportTable() {
+  const tbody = document.getElementById('exportTable');
+  tbody.innerHTML = '';
+  students.forEach(s => {
+    const m = calculateMetrics(s);
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td><span class="student-badge">${s.id}</span></td>
+      <td>${s.name}</td>
+      <td>${s.prodDev || 0}</td>
+      <td>${s.marketRes || 0}</td>
+      <td>${s.marketing || 0}</td>
+      <td>${s.ops || 0}</td>
+      <td>${s.ai || 0}</td>
+      <td>${s.talentDev || 0}</td>
+      <td>${s.partnerships || 0}</td>
+      <td class="${m.totalRevenue > 100 ? 'highlight-green' : ''}">₹${m.totalRevenue}</td>
+      <td class="${m.efficiency > 2 ? 'highlight-green' : ''}">${m.efficiency.toFixed(2)}x</td>
+      <td class="${m.isFeasible ? 'status-feasible' : 'status-overspent'}">${m.isFeasible ? '✅' : '❌'}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+// =============================================================
+// EXPORT FUNCTIONS
+// =============================================================
+function exportCSV() {
+  if (students.length === 0) { alert('No data to export'); return; }
+  let csv = 'StudentID,Name,ProdDev,MarketRes,Marketing,Ops,AI,TalentDev,Partnerships,Revenue,Efficiency,Status\n';
+  students.forEach(s => {
+    const m = calculateMetrics(s);
+    csv += [
+      s.id, s.name,
+      s.prodDev||0, s.marketRes||0, s.marketing||0, s.ops||0,
+      s.ai||0, s.talentDev||0, s.partnerships||0,
+      m.totalRevenue, m.efficiency.toFixed(2),
+      m.isFeasible ? 'Feasible' : 'Overspent'
+    ].join(',') + '\n';
+  });
+  downloadFile(csv, 'scarcity_challenge_data.csv', 'text/csv');
+}
+
+function exportJSON() {
+  if (students.length === 0) { alert('No data to export'); return; }
+  const json = JSON.stringify(students, null, 2);
+  downloadFile(json, 'scarcity_challenge_data.json', 'application/json');
+}
+
+function copyToClipboard() {
+  if (students.length === 0) { alert('No data to copy'); return; }
+  const text = students.map(s => {
+    const m = calculateMetrics(s);
+    return `${s.id},${s.name},${s.prodDev||0},${s.marketRes||0},${s.marketing||0},${s.ops||0},${s.ai||0},${s.talentDev||0},${s.partnerships||0},${m.totalRevenue},${m.efficiency.toFixed(2)},${m.isFeasible?'Feasible':'Overspent'}`;
+  }).join('\n');
+  navigator.clipboard.writeText(text).then(() => alert('✅ Copied to clipboard!'));
+}
+
+function downloadFile(content, filename, mimeType) {
+  const blob = new Blob([content], { type: mimeType + ';charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+function clearAllData() {
+  if (confirm('⚠️ Delete ALL student data? This cannot be undone.')) {
+    students = [];
+    studentIdCounter = 1;
+    saveData();
+    renderAll();
+    alert('All data cleared.');
+  }
+}
+
+// =============================================================
+// INITIALIZE WITH SAMPLE DATA
+// =============================================================
+function initSampleData() {
+  const sampleStudents = [
+    { id: 'S001', name: 'Aarav Sharma', prodDev: 1, marketRes: 1, marketing: 0, ops: 1, ai: 1, talentDev: 1, partnerships: 0 },
+    { id: 'S002', name: 'Priya Patel', prodDev: 1, marketRes: 0, marketing: 1, ops: 0, ai: 1, talentDev: 1, partnerships: 1 },
+    { id: 'S003', name: 'Rahul Singh', prodDev: 0, marketRes: 1, marketing: 0, ops: 1, ai: 1, talentDev: 0, partnerships: 1 },
+    { id: 'S004', name: 'Sneha Reddy', prodDev: 1, marketRes: 1, marketing: 1, ops: 0, ai: 0, talentDev: 1, partnerships: 1 },
+    { id: 'S005', name: 'Vikram Kumar', prodDev: 1, marketRes: 1, marketing: 1, ops: 1, ai: 1, talentDev: 0, partnerships: 0 },
+    { id: 'S006', name: 'Ananya Gupta', prodDev: 0, marketRes: 0, marketing: 1, ops: 1, ai: 1, talentDev: 1, partnerships: 1 },
+    { id: 'S007', name: 'Arjun Nair', prodDev: 1, marketRes: 1, marketing: 1, ops: 1, ai: 1, talentDev: 1, partnerships: 1 },
+    { id: 'S008', name: 'Meera Iyer', prodDev: 1, marketRes: 0, marketing: 0, ops: 0, ai: 1, talentDev: 0, partnerships: 0 },
+    { id: 'S009', name: 'Karan Joshi', prodDev: 0, marketRes: 1, marketing: 1, ops: 1, ai: 0, talentDev: 1, partnerships: 1 },
+    { id: 'S010', name: 'Divya Menon', prodDev: 1, marketRes: 1, marketing: 0, ops: 0, ai: 1, talentDev: 1, partnerships: 1 }
+  ];
+  students = sampleStudents;
+  studentIdCounter = 11;
+  saveData();
+  renderAll();
+}
+
+// =============================================================
+// AUTO-SAVE & LOAD
+// =============================================================
+setInterval(saveData, 5000);
+
+loadData();
+if (students.length === 0) {
+  initSampleData();
+} else {
+  renderAll();
+  renderObjectiveGrid();
+  updateResourceCheck();
+}
+
+console.log('🏢 Scarcity Challenge Dashboard loaded!');
+console.log('📊 Students:', students.length);
+</script>
+
+</body>
+</html>
