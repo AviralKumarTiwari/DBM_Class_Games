@@ -3,29 +3,52 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Interactive Dashboards – Platform Economics Activities</title>
+<title>Platform Economics – Interactive Dashboards</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; }
 .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-.tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-.tab-btn { padding: 12px 24px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; background: #e9ecef; color: #495057; }
+
+/* Header */
+.header { background: linear-gradient(135deg, #1E4D7B, #2E6BAE); color: white; padding: 25px 30px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+.header h1 { font-size: 28px; }
+.header .subtitle { opacity: 0.8; font-size: 16px; }
+
+/* Tabs */
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; background: white; padding: 12px 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+.tab-btn { padding: 10px 22px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.3s; background: #e9ecef; color: #495057; }
 .tab-btn:hover { background: #dee2e6; }
 .tab-btn.active { background: #1E4D7B; color: white; }
-.dashboard { display: none; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+
+/* Dashboard Panels */
+.dashboard { display: none; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
 .dashboard.active { display: block; }
-.dashboard-title { font-size: 24px; font-weight: 700; color: #1E4D7B; margin-bottom: 10px; border-bottom: 3px solid #F5A623; padding-bottom: 10px; }
-.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin: 15px 0; }
-.stat-card { background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; border-left: 4px solid #1E4D7B; }
-.stat-card .number { font-size: 28px; font-weight: 700; color: #1E4D7B; }
-.stat-card .label { font-size: 13px; color: #666; margin-top: 5px; }
-table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 10px 0; }
-table th { background: #1E4D7B; color: white; padding: 10px; text-align: center; }
+.dashboard-title { font-size: 22px; font-weight: 700; color: #1E4D7B; margin-bottom: 15px; border-bottom: 3px solid #F5A623; padding-bottom: 10px; }
+
+/* Stats Grid */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 15px 0; }
+.stat-card { background: #f8f9fa; padding: 14px; border-radius: 8px; text-align: center; border-left: 4px solid #1E4D7B; }
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.stat-card .number { font-size: 24px; font-weight: 700; color: #1E4D7B; }
+.stat-card .label { font-size: 11px; color: #666; margin-top: 4px; }
+.stat-card.green { border-left-color: #28a745; }
+.stat-card.orange { border-left-color: #fd7e14; }
+.stat-card.red { border-left-color: #dc3545; }
+.stat-card.purple { border-left-color: #6f42c1; }
+.stat-card.gold { border-left-color: #F5A623; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; margin: 15px 0; max-height: 500px; overflow-y: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+table th { background: #1E4D7B; color: white; padding: 10px 12px; text-align: center; position: sticky; top: 0; z-index: 10; white-space: nowrap; }
 table td { padding: 8px 10px; border: 1px solid #ddd; text-align: center; }
 table tr:nth-child(even) { background: #f8f9fa; }
 table tr:hover { background: #e3f2fd; }
-.input-cell { width: 80px; padding: 6px; border: 1px solid #ddd; border-radius: 4px; text-align: center; font-size: 14px; }
-.input-cell:focus { border-color: #1E4D7B; outline: none; box-shadow: 0 0 0 2px rgba(30,77,123,0.2); }
+table .highlight-green { background: #d4edda !important; }
+table .highlight-red { background: #f8d7da !important; }
+table .highlight-gold { background: #fff3cd !important; }
+
+/* Buttons */
 .btn { padding: 8px 20px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; }
 .btn-primary { background: #1E4D7B; color: white; }
 .btn-primary:hover { background: #2E6BAE; }
@@ -35,26 +58,43 @@ table tr:hover { background: #e3f2fd; }
 .btn-danger:hover { background: #c82333; }
 .btn-warning { background: #ffc107; color: #333; }
 .btn-warning:hover { background: #e0a800; }
-.btn-sm { padding: 5px 12px; font-size: 12px; }
+.btn-sm { padding: 5px 14px; font-size: 12px; }
+
+/* Action Bar */
 .action-bar { display: flex; gap: 10px; flex-wrap: wrap; margin: 15px 0; }
-.highlight-green { background: #d4edda !important; }
-.highlight-red { background: #f8d7da !important; }
-.highlight-gold { background: #fff3cd !important; }
+
+/* Chart */
 .chart-container { background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0; min-height: 200px; }
 .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 150px; padding: 10px 0; }
 .bar { flex: 1; display: flex; flex-direction: column; align-items: center; }
 .bar-fill { width: 100%; min-height: 5px; border-radius: 4px 4px 0 0; transition: height 0.5s; }
 .bar-label { font-size: 11px; color: #666; margin-top: 4px; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header h1 { font-size: 20px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .tab-btn { padding: 8px 14px; font-size: 12px; }
+  .dashboard { padding: 15px; }
+}
 </style>
 </head>
 <body>
 
 <div class="container">
 
-<h1 style="color: #1E4D7B; margin-bottom: 10px;">📊 Platform Economics – Interactive Dashboards</h1>
-<p style="color: #666; margin-bottom: 20px;">Enter data directly into tables – dashboards update in real-time</p>
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <h1>📊 Platform Economics – Interactive Dashboards</h1>
+    <div class="subtitle">Enter data directly into tables – dashboards update in real-time</div>
+  </div>
+  <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+    <span style="background: #F5A623; color: #1E4D7B; padding: 6px 16px; border-radius: 20px; font-weight: 700; font-size: 14px;" id="totalEntries">0 Entries</span>
+  </div>
+</div>
 
-<!-- Tabs -->
+<!-- TABS -->
 <div class="tabs">
   <button class="tab-btn active" data-tab="tab1">🎮 Activity 1: Two-Sided Market</button>
   <button class="tab-btn" data-tab="tab2">🌐 Activity 2: Network Effects</button>
@@ -64,7 +104,7 @@ table tr:hover { background: #e3f2fd; }
 </div>
 
 <!-- ============================================================ -->
-<!-- ACTIVITY 1: TWO-SIDED MARKET -->
+<!-- ACTIVITY 1 -->
 <!-- ============================================================ -->
 <div class="dashboard active" id="tab1">
   <div class="dashboard-title">🎮 Activity 1: Two-Sided Market Simulation</div>
@@ -82,14 +122,16 @@ table tr:hover { background: #e3f2fd; }
     <button class="btn btn-danger btn-sm" onclick="clearTable1()">🗑️ Clear All</button>
   </div>
 
-  <table id="table1">
-    <thead><tr><th>#</th><th>Round</th><th>Buyer ID</th><th>Buyer WTP</th><th>Seller ID</th><th>Seller Cost</th><th>Trade Price</th><th>Consumer Surplus</th><th>Producer Surplus</th><th>Platform (10%)</th></tr></thead>
-    <tbody id="tbody1"></tbody>
-  </table>
+  <div class="table-wrap">
+    <table id="table1">
+      <thead><tr><th>#</th><th>Round</th><th>Buyer ID</th><th>Buyer WTP</th><th>Seller ID</th><th>Seller Cost</th><th>Trade Price</th><th>Consumer Surplus</th><th>Producer Surplus</th><th>Platform (10%)</th></tr></thead>
+      <tbody id="tbody1"></tbody>
+    </table>
+  </div>
 </div>
 
 <!-- ============================================================ -->
-<!-- ACTIVITY 2: NETWORK EFFECTS -->
+<!-- ACTIVITY 2 -->
 <!-- ============================================================ -->
 <div class="dashboard" id="tab2">
   <div class="dashboard-title">🌐 Activity 2: Network Effect Simulator</div>
@@ -106,10 +148,12 @@ table tr:hover { background: #e3f2fd; }
     <button class="btn btn-danger btn-sm" onclick="clearTable2()">🗑️ Clear All</button>
   </div>
 
-  <table id="table2">
-    <thead><tr><th>#</th><th>Student</th><th>Round 1 Choice</th><th>Round 2 Choice</th><th>Round 3 Choice</th></tr></thead>
-    <tbody id="tbody2"></tbody>
-  </table>
+  <div class="table-wrap">
+    <table id="table2">
+      <thead><tr><th>#</th><th>Student</th><th>Round 1 Choice</th><th>Round 2 Choice</th><th>Round 3 Choice</th></tr></thead>
+      <tbody id="tbody2"></tbody>
+    </table>
+  </div>
 
   <div class="chart-container">
     <h4>Platform Adoption Over Rounds</h4>
@@ -125,7 +169,7 @@ table tr:hover { background: #e3f2fd; }
 </div>
 
 <!-- ============================================================ -->
-<!-- ACTIVITY 3: PLATFORM PRICING -->
+<!-- ACTIVITY 3 -->
 <!-- ============================================================ -->
 <div class="dashboard" id="tab3">
   <div class="dashboard-title">💰 Activity 3: Platform Pricing Game</div>
@@ -142,14 +186,16 @@ table tr:hover { background: #e3f2fd; }
     <button class="btn btn-danger btn-sm" onclick="clearTable3()">🗑️ Clear All</button>
   </div>
 
-  <table id="table3">
-    <thead><tr><th>Group</th><th>Rider Fare</th><th>Driver Commission</th><th>Riders</th><th>Drivers</th><th>Trades</th><th>Revenue (R1)</th></tr></thead>
-    <tbody id="tbody3"></tbody>
-  </table>
+  <div class="table-wrap">
+    <table id="table3">
+      <thead><tr><th>Group</th><th>Rider Fare</th><th>Driver Commission</th><th>Riders</th><th>Drivers</th><th>Trades</th><th>Revenue (R1)</th></tr></thead>
+      <tbody id="tbody3"></tbody>
+    </table>
+  </div>
 </div>
 
 <!-- ============================================================ -->
-<!-- ACTIVITY 4: ALGORITHM GAME -->
+<!-- ACTIVITY 4 -->
 <!-- ============================================================ -->
 <div class="dashboard" id="tab4">
   <div class="dashboard-title">🤖 Activity 4: Algorithm Game</div>
@@ -166,14 +212,16 @@ table tr:hover { background: #e3f2fd; }
     <button class="btn btn-danger btn-sm" onclick="clearTable4()">🗑️ Clear All</button>
   </div>
 
-  <table id="table4">
-    <thead><tr><th>#</th><th>Round</th><th>Buyer WTP</th><th>Seller Cost</th><th>Trade Price</th><th>Consumer Surplus</th><th>Producer Surplus</th><th>Total Surplus</th></tr></thead>
-    <tbody id="tbody4"></tbody>
-  </table>
+  <div class="table-wrap">
+    <table id="table4">
+      <thead><tr><th>#</th><th>Round</th><th>Buyer WTP</th><th>Seller Cost</th><th>Trade Price</th><th>Consumer Surplus</th><th>Producer Surplus</th><th>Total Surplus</th></tr></thead>
+      <tbody id="tbody4"></tbody>
+    </table>
+  </div>
 </div>
 
 <!-- ============================================================ -->
-<!-- ACTIVITY 5: PLATFORM MONOPOLY -->
+<!-- ACTIVITY 5 -->
 <!-- ============================================================ -->
 <div class="dashboard" id="tab5">
   <div class="dashboard-title">🏛️ Activity 5: Platform Monopoly Game</div>
@@ -190,16 +238,18 @@ table tr:hover { background: #e3f2fd; }
     <button class="btn btn-danger btn-sm" onclick="clearTable5()">🗑️ Clear All</button>
   </div>
 
-  <table id="table5">
-    <thead><tr><th>Developer</th><th>R1 Revenue</th><th>R1 Cost</th><th>R1 Profit</th><th>R2 Revenue</th><th>R2 Commission</th><th>R2 Profit</th><th>R3 Users</th><th>R3 Profit</th></tr></thead>
-    <tbody id="tbody5"></tbody>
-  </table>
+  <div class="table-wrap">
+    <table id="table5">
+      <thead><tr><th>Developer</th><th>R1 Revenue</th><th>R1 Cost</th><th>R1 Profit</th><th>R2 Revenue</th><th>R2 Commission</th><th>R2 Profit</th><th>R3 Users</th><th>R3 Profit</th></tr></thead>
+      <tbody id="tbody5"></tbody>
+    </table>
+  </div>
 </div>
 
 </div>
 
 <!-- ============================================================ -->
-<!-- JAVASCRIPT – All Interactive Logic -->
+<!-- JAVASCRIPT -->
 <!-- ============================================================ -->
 <script>
 // =============================================================
@@ -215,18 +265,26 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 });
 
 // =============================================================
-// ACTIVITY 1: TWO-SIDED MARKET
+// TOTAL ENTRIES COUNTER
+// =============================================================
+function updateTotalEntries() {
+  const total = data1.length + data2.length + data3.length + data4.length + data5.length;
+  document.getElementById('totalEntries').textContent = total + ' Entries';
+}
+
+// =============================================================
+// ACTIVITY 1
 // =============================================================
 let rowCount1 = 0;
 const data1 = [];
 
 function addRow1() {
   rowCount1++;
-  const buyer = prompt('Enter Buyer ID (e.g., S001):', 'S00' + Math.floor(Math.random()*10+1));
+  const buyer = prompt('Enter Buyer ID:', 'S' + String(Math.floor(Math.random()*10+1)).padStart(3,'0'));
   if (!buyer) return;
   const wtp = parseInt(prompt('Enter Buyer WTP ($2-10):', Math.floor(Math.random()*8+2)));
   if (!wtp) return;
-  const seller = prompt('Enter Seller ID:', 'S01' + Math.floor(Math.random()*10+1));
+  const seller = prompt('Enter Seller ID:', 'S0' + String(Math.floor(Math.random()*10+16)));
   if (!seller) return;
   const cost = parseInt(prompt('Enter Seller Cost ($2-10):', Math.floor(Math.random()*8+2)));
   if (!cost) return;
@@ -241,6 +299,7 @@ function addRow1() {
 
   data1.push({ id: rowCount1, round, buyer, wtp, seller, cost, price, cs, ps, platform });
   renderTable1();
+  updateTotalEntries();
 }
 
 function renderTable1() {
@@ -277,10 +336,10 @@ function renderTable1() {
   document.getElementById('a1_platform').textContent = '$' + totalPlat.toFixed(2);
 }
 
-function clearTable1() { data1.length = 0; renderTable1(); }
+function clearTable1() { data1.length = 0; renderTable1(); updateTotalEntries(); }
 
 // =============================================================
-// ACTIVITY 2: NETWORK EFFECTS
+// ACTIVITY 2
 // =============================================================
 let rowCount2 = 0;
 const data2 = [];
@@ -298,12 +357,13 @@ function addRow2() {
 
   data2.push({ id: rowCount2, student, r1: r1.toUpperCase(), r2: r2.toUpperCase(), r3: r3.toUpperCase() });
   renderTable2();
+  updateTotalEntries();
 }
 
 function renderTable2() {
   const tbody = document.getElementById('tbody2');
   tbody.innerHTML = '';
-  let aCount = 0, bCount = 0, a1=0,b1=0,a2=0,b2=0,a3=0,b3=0;
+  let a1=0,b1=0,a2=0,b2=0,a3=0,b3=0;
 
   data2.forEach(d => {
     if (d.r1 === 'A') a1++; else if (d.r1 === 'B') b1++;
@@ -326,7 +386,6 @@ function renderTable2() {
   document.getElementById('a2_total').textContent = total;
   document.getElementById('a2_winner').textContent = a3 > b3 ? 'Platform A' : b3 > a3 ? 'Platform B' : 'Tie';
 
-  // Update chart
   const maxVal = Math.max(a1,b1,a2,b2,a3,b3,1);
   const chart = document.getElementById('chart2');
   const bars = chart.querySelectorAll('.bar-fill');
@@ -340,10 +399,10 @@ function renderTable2() {
   labels.forEach((l, i) => { l.textContent = ['R1 A','R1 B','R2 A','R2 B','R3 A','R3 B'][i] + ' (' + [a1,b1,a2,b2,a3,b3][i] + ')'; });
 }
 
-function clearTable2() { data2.length = 0; renderTable2(); }
+function clearTable2() { data2.length = 0; renderTable2(); updateTotalEntries(); }
 
 // =============================================================
-// ACTIVITY 3: PLATFORM PRICING
+// ACTIVITY 3
 // =============================================================
 let rowCount3 = 0;
 const data3 = [];
@@ -365,6 +424,7 @@ function addRow3() {
 
   data3.push({ group, fare, comm, riders, drivers, trades, revenue });
   renderTable3();
+  updateTotalEntries();
 }
 
 function renderTable3() {
@@ -393,10 +453,10 @@ function renderTable3() {
   document.getElementById('a3_winner').textContent = totalRev > 0 ? 'Revenue: $' + totalRev.toFixed(2) : 'No data';
 }
 
-function clearTable3() { data3.length = 0; renderTable3(); }
+function clearTable3() { data3.length = 0; renderTable3(); updateTotalEntries(); }
 
 // =============================================================
-// ACTIVITY 4: ALGORITHM GAME
+// ACTIVITY 4
 // =============================================================
 let rowCount4 = 0;
 const data4 = [];
@@ -416,6 +476,7 @@ function addRow4() {
   const ps = price - cost;
   data4.push({ id: rowCount4, round, wtp, cost, price, cs, ps });
   renderTable4();
+  updateTotalEntries();
 }
 
 function renderTable4() {
@@ -445,7 +506,6 @@ function renderTable4() {
   document.getElementById('a4_avg').textContent = totalTrades > 0 ? '$' + (priceSum/totalTrades).toFixed(2) : '$0.00';
   document.getElementById('a4_surplus').textContent = '$' + totalSurplus;
 
-  // Find best round
   const rounds = {};
   data4.forEach(d => {
     if (!rounds[d.round]) rounds[d.round] = { trades: 0, surplus: 0 };
@@ -460,10 +520,10 @@ function renderTable4() {
   document.getElementById('a4_round').textContent = best;
 }
 
-function clearTable4() { data4.length = 0; renderTable4(); }
+function clearTable4() { data4.length = 0; renderTable4(); updateTotalEntries(); }
 
 // =============================================================
-// ACTIVITY 5: PLATFORM MONOPOLY
+// ACTIVITY 5
 // =============================================================
 let rowCount5 = 0;
 const data5 = [];
@@ -487,6 +547,7 @@ function addRow5() {
 
   data5.push({ dev, r1rev, r1cost, r2rev, r2comm, r3users, r3profit });
   renderTable5();
+  updateTotalEntries();
 }
 
 function renderTable5() {
@@ -521,13 +582,13 @@ function renderTable5() {
   document.getElementById('a5_winner').textContent = totalPlatform > 0 ? 'Platform Power: $' + totalPlatform.toFixed(2) : 'No data';
 }
 
-function clearTable5() { data5.length = 0; renderTable5(); }
+function clearTable5() { data5.length = 0; renderTable5(); updateTotalEntries(); }
 
 // =============================================================
 // INITIALIZE WITH SAMPLE DATA
 // =============================================================
 function initSampleData() {
-  // Activity 1 sample
+  // Activity 1
   const sample1 = [
     { id:1, round:1, buyer:'S001', wtp:8, seller:'S016', cost:3, price:5, cs:3, ps:2, platform:0 },
     { id:2, round:1, buyer:'S002', wtp:9, seller:'S017', cost:4, price:6, cs:3, ps:2, platform:0 },
@@ -537,7 +598,7 @@ function initSampleData() {
   data1.push(...sample1);
   renderTable1();
 
-  // Activity 2 sample
+  // Activity 2
   const sample2 = [
     { id:1, student:'S001', r1:'A', r2:'A', r3:'A' },
     { id:2, student:'S002', r1:'A', r2:'B', r3:'A' },
@@ -548,7 +609,7 @@ function initSampleData() {
   data2.push(...sample2);
   renderTable2();
 
-  // Activity 3 sample
+  // Activity 3
   const sample3 = [
     { group:'G01', fare:6, comm:20, riders:12, drivers:10, trades:10, revenue:12 },
     { group:'G02', fare:5, comm:25, riders:10, drivers:12, trades:10, revenue:12.5 },
@@ -557,7 +618,7 @@ function initSampleData() {
   data3.push(...sample3);
   renderTable3();
 
-  // Activity 4 sample
+  // Activity 4
   const sample4 = [
     { id:1, round:1, wtp:8, cost:3, price:5, cs:3, ps:2 },
     { id:2, round:1, wtp:9, cost:4, price:6, cs:3, ps:2 },
@@ -568,13 +629,15 @@ function initSampleData() {
   data4.push(...sample4);
   renderTable4();
 
-  // Activity 5 sample
+  // Activity 5
   const sample5 = [
     { dev:'Dev1', r1rev:100, r1cost:50, r2rev:120, r2comm:30, r3users:60, r3profit:35 },
     { dev:'Dev2', r1rev:80, r1cost:40, r2rev:90, r2comm:30, r3users:40, r3profit:20 }
   ];
   data5.push(...sample5);
   renderTable5();
+
+  updateTotalEntries();
 }
 
 initSampleData();
