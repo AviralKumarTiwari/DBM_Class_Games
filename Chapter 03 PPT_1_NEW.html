@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interactive Dashboards – Platform Economics Activities</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; }
+.container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+.tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+.tab-btn { padding: 12px 24px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; background: #e9ecef; color: #495057; }
+.tab-btn:hover { background: #dee2e6; }
+.tab-btn.active { background: #1E4D7B; color: white; }
+.dashboard { display: none; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+.dashboard.active { display: block; }
+.dashboard-title { font-size: 24px; font-weight: 700; color: #1E4D7B; margin-bottom: 10px; border-bottom: 3px solid #F5A623; padding-bottom: 10px; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin: 15px 0; }
+.stat-card { background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; border-left: 4px solid #1E4D7B; }
+.stat-card .number { font-size: 28px; font-weight: 700; color: #1E4D7B; }
+.stat-card .label { font-size: 13px; color: #666; margin-top: 5px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 10px 0; }
+table th { background: #1E4D7B; color: white; padding: 10px; text-align: center; }
+table td { padding: 8px 10px; border: 1px solid #ddd; text-align: center; }
+table tr:nth-child(even) { background: #f8f9fa; }
+table tr:hover { background: #e3f2fd; }
+.input-cell { width: 80px; padding: 6px; border: 1px solid #ddd; border-radius: 4px; text-align: center; font-size: 14px; }
+.input-cell:focus { border-color: #1E4D7B; outline: none; box-shadow: 0 0 0 2px rgba(30,77,123,0.2); }
+.btn { padding: 8px 20px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+.btn-primary { background: #1E4D7B; color: white; }
+.btn-primary:hover { background: #2E6BAE; }
+.btn-success { background: #28a745; color: white; }
+.btn-success:hover { background: #218838; }
+.btn-danger { background: #dc3545; color: white; }
+.btn-danger:hover { background: #c82333; }
+.btn-warning { background: #ffc107; color: #333; }
+.btn-warning:hover { background: #e0a800; }
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+.action-bar { display: flex; gap: 10px; flex-wrap: wrap; margin: 15px 0; }
+.highlight-green { background: #d4edda !important; }
+.highlight-red { background: #f8d7da !important; }
+.highlight-gold { background: #fff3cd !important; }
+.chart-container { background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0; min-height: 200px; }
+.bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 150px; padding: 10px 0; }
+.bar { flex: 1; display: flex; flex-direction: column; align-items: center; }
+.bar-fill { width: 100%; min-height: 5px; border-radius: 4px 4px 0 0; transition: height 0.5s; }
+.bar-label { font-size: 11px; color: #666; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h1 style="color: #1E4D7B; margin-bottom: 10px;">📊 Platform Economics – Interactive Dashboards</h1>
+<p style="color: #666; margin-bottom: 20px;">Enter data directly into tables – dashboards update in real-time</p>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab-btn active" data-tab="tab1">🎮 Activity 1: Two-Sided Market</button>
+  <button class="tab-btn" data-tab="tab2">🌐 Activity 2: Network Effects</button>
+  <button class="tab-btn" data-tab="tab3">💰 Activity 3: Platform Pricing</button>
+  <button class="tab-btn" data-tab="tab4">🤖 Activity 4: Algorithm Game</button>
+  <button class="tab-btn" data-tab="tab5">🏛️ Activity 5: Platform Monopoly</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- ACTIVITY 1: TWO-SIDED MARKET -->
+<!-- ============================================================ -->
+<div class="dashboard active" id="tab1">
+  <div class="dashboard-title">🎮 Activity 1: Two-Sided Market Simulation</div>
+
+  <div class="stats-grid" id="stats1">
+    <div class="stat-card"><div class="number" id="a1_trades">0</div><div class="label">Total Trades</div></div>
+    <div class="stat-card"><div class="number" id="a1_avgprice">$0.00</div><div class="label">Avg Price</div></div>
+    <div class="stat-card"><div class="number" id="a1_cs">$0</div><div class="label">Total Consumer Surplus</div></div>
+    <div class="stat-card"><div class="number" id="a1_ps">$0</div><div class="label">Total Producer Surplus</div></div>
+    <div class="stat-card"><div class="number" id="a1_platform">$0</div><div class="label">Platform Revenue</div></div>
+  </div>
+
+  <div class="action-bar">
+    <button class="btn btn-primary btn-sm" onclick="addRow1()">➕ Add Trade</button>
+    <button class="btn btn-danger btn-sm" onclick="clearTable1()">🗑️ Clear All</button>
+  </div>
+
+  <table id="table1">
+    <thead><tr><th>#</th><th>Round</th><th>Buyer ID</th><th>Buyer WTP</th><th>Seller ID</th><th>Seller Cost</th><th>Trade Price</th><th>Consumer Surplus</th><th>Producer Surplus</th><th>Platform (10%)</th></tr></thead>
+    <tbody id="tbody1"></tbody>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<!-- ACTIVITY 2: NETWORK EFFECTS -->
+<!-- ============================================================ -->
+<div class="dashboard" id="tab2">
+  <div class="dashboard-title">🌐 Activity 2: Network Effect Simulator</div>
+
+  <div class="stats-grid" id="stats2">
+    <div class="stat-card"><div class="number" id="a2_a">0</div><div class="label">Platform A Users</div></div>
+    <div class="stat-card"><div class="number" id="a2_b">0</div><div class="label">Platform B Users</div></div>
+    <div class="stat-card"><div class="number" id="a2_total">0</div><div class="label">Total Users</div></div>
+    <div class="stat-card"><div class="number" id="a2_winner">-</div><div class="label">Winner</div></div>
+  </div>
+
+  <div class="action-bar">
+    <button class="btn btn-primary btn-sm" onclick="addRow2()">➕ Add Student Choice</button>
+    <button class="btn btn-danger btn-sm" onclick="clearTable2()">🗑️ Clear All</button>
+  </div>
+
+  <table id="table2">
+    <thead><tr><th>#</th><th>Student</th><th>Round 1 Choice</th><th>Round 2 Choice</th><th>Round 3 Choice</th></tr></thead>
+    <tbody id="tbody2"></tbody>
+  </table>
+
+  <div class="chart-container">
+    <h4>Platform Adoption Over Rounds</h4>
+    <div class="bar-chart" id="chart2">
+      <div class="bar"><div class="bar-fill" style="height:0px;background:#1E4D7B;"></div><div class="bar-label">R1 A</div></div>
+      <div class="bar"><div class="bar-fill" style="height:0px;background:#e67e22;"></div><div class="bar-label">R1 B</div></div>
+      <div class="bar"><div class="bar-fill" style="height:0px;background:#1E4D7B;"></div><div class="bar-label">R2 A</div></div>
+      <div class="bar"><div class="bar-fill" style="height:0px;background:#e67e22;"></div><div class="bar-label">R2 B</div></div>
+      <div class="bar"><div class="bar-fill" style="height:0px;background:#1E4D7B;"></div><div class="bar-label">R3 A</div></div>
+      <div class="bar"><div class="bar-fill" style="height:0px;background:#e67e22;"></div><div class="bar-label">R3 B</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ACTIVITY 3: PLATFORM PRICING -->
+<!-- ============================================================ -->
+<div class="dashboard" id="tab3">
+  <div class="dashboard-title">💰 Activity 3: Platform Pricing Game</div>
+
+  <div class="stats-grid" id="stats3">
+    <div class="stat-card"><div class="number" id="a3_r1">$0</div><div class="label">Round 1 Revenue</div></div>
+    <div class="stat-card"><div class="number" id="a3_r2">$0</div><div class="label">Round 2 Revenue</div></div>
+    <div class="stat-card"><div class="number" id="a3_r3">$0</div><div class="label">Round 3 Revenue</div></div>
+    <div class="stat-card"><div class="number" id="a3_winner">-</div><div class="label">Winning Strategy</div></div>
+  </div>
+
+  <div class="action-bar">
+    <button class="btn btn-primary btn-sm" onclick="addRow3()">➕ Add Group Result</button>
+    <button class="btn btn-danger btn-sm" onclick="clearTable3()">🗑️ Clear All</button>
+  </div>
+
+  <table id="table3">
+    <thead><tr><th>Group</th><th>Rider Fare</th><th>Driver Commission</th><th>Riders</th><th>Drivers</th><th>Trades</th><th>Revenue (R1)</th></tr></thead>
+    <tbody id="tbody3"></tbody>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<!-- ACTIVITY 4: ALGORITHM GAME -->
+<!-- ============================================================ -->
+<div class="dashboard" id="tab4">
+  <div class="dashboard-title">🤖 Activity 4: Algorithm Game</div>
+
+  <div class="stats-grid" id="stats4">
+    <div class="stat-card"><div class="number" id="a4_trades">0</div><div class="label">Total Trades</div></div>
+    <div class="stat-card"><div class="number" id="a4_avg">$0.00</div><div class="label">Avg Price</div></div>
+    <div class="stat-card"><div class="number" id="a4_surplus">$0</div><div class="label">Total Surplus</div></div>
+    <div class="stat-card"><div class="number" id="a4_round">-</div><div class="label">Best Round</div></div>
+  </div>
+
+  <div class="action-bar">
+    <button class="btn btn-primary btn-sm" onclick="addRow4()">➕ Add Trade</button>
+    <button class="btn btn-danger btn-sm" onclick="clearTable4()">🗑️ Clear All</button>
+  </div>
+
+  <table id="table4">
+    <thead><tr><th>#</th><th>Round</th><th>Buyer WTP</th><th>Seller Cost</th><th>Trade Price</th><th>Consumer Surplus</th><th>Producer Surplus</th><th>Total Surplus</th></tr></thead>
+    <tbody id="tbody4"></tbody>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<!-- ACTIVITY 5: PLATFORM MONOPOLY -->
+<!-- ============================================================ -->
+<div class="dashboard" id="tab5">
+  <div class="dashboard-title">🏛️ Activity 5: Platform Monopoly Game</div>
+
+  <div class="stats-grid" id="stats5">
+    <div class="stat-card"><div class="number" id="a5_dev">0</div><div class="label">Developer Profit</div></div>
+    <div class="stat-card"><div class="number" id="a5_platform_rev">$0</div><div class="label">Platform Revenue</div></div>
+    <div class="stat-card"><div class="number" id="a5_consumers">0</div><div class="label">Total Consumers</div></div>
+    <div class="stat-card"><div class="number" id="a5_winner">-</div><div class="label">Market Power</div></div>
+  </div>
+
+  <div class="action-bar">
+    <button class="btn btn-primary btn-sm" onclick="addRow5()">➕ Add Developer</button>
+    <button class="btn btn-danger btn-sm" onclick="clearTable5()">🗑️ Clear All</button>
+  </div>
+
+  <table id="table5">
+    <thead><tr><th>Developer</th><th>R1 Revenue</th><th>R1 Cost</th><th>R1 Profit</th><th>R2 Revenue</th><th>R2 Commission</th><th>R2 Profit</th><th>R3 Users</th><th>R3 Profit</th></tr></thead>
+    <tbody id="tbody5"></tbody>
+  </table>
+</div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- JAVASCRIPT – All Interactive Logic -->
+<!-- ============================================================ -->
+<script>
+// =============================================================
+// TAB SWITCHING
+// =============================================================
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    document.querySelectorAll('.dashboard').forEach(d => d.classList.remove('active'));
+    document.getElementById(this.dataset.tab).classList.add('active');
+  });
+});
+
+// =============================================================
+// ACTIVITY 1: TWO-SIDED MARKET
+// =============================================================
+let rowCount1 = 0;
+const data1 = [];
+
+function addRow1() {
+  rowCount1++;
+  const buyer = prompt('Enter Buyer ID (e.g., S001):', 'S00' + Math.floor(Math.random()*10+1));
+  if (!buyer) return;
+  const wtp = parseInt(prompt('Enter Buyer WTP ($2-10):', Math.floor(Math.random()*8+2)));
+  if (!wtp) return;
+  const seller = prompt('Enter Seller ID:', 'S01' + Math.floor(Math.random()*10+1));
+  if (!seller) return;
+  const cost = parseInt(prompt('Enter Seller Cost ($2-10):', Math.floor(Math.random()*8+2)));
+  if (!cost) return;
+  const price = parseInt(prompt('Enter Trade Price:', Math.floor((wtp + cost) / 2)));
+  if (!price) return;
+  const round = parseInt(prompt('Enter Round (1 or 2):', '1'));
+  if (!round) return;
+
+  const cs = wtp - price;
+  const ps = price - cost;
+  const platform = round === 2 ? price * 0.1 : 0;
+
+  data1.push({ id: rowCount1, round, buyer, wtp, seller, cost, price, cs, ps, platform });
+  renderTable1();
+}
+
+function renderTable1() {
+  const tbody = document.getElementById('tbody1');
+  tbody.innerHTML = '';
+  let totalTrades = 0, totalCS = 0, totalPS = 0, totalPlat = 0, priceSum = 0;
+
+  data1.forEach(d => {
+    totalTrades++;
+    totalCS += d.cs;
+    totalPS += d.ps;
+    totalPlat += d.platform;
+    priceSum += d.price;
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${d.id}</td>
+      <td>${d.round}</td>
+      <td>${d.buyer}</td>
+      <td>$${d.wtp}</td>
+      <td>${d.seller}</td>
+      <td>$${d.cost}</td>
+      <td>$${d.price}</td>
+      <td class="${d.cs > 0 ? 'highlight-green' : 'highlight-red'}">$${d.cs}</td>
+      <td class="${d.ps > 0 ? 'highlight-green' : 'highlight-red'}">$${d.ps}</td>
+      <td>$${d.platform.toFixed(2)}</td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  document.getElementById('a1_trades').textContent = totalTrades;
+  document.getElementById('a1_avgprice').textContent = totalTrades > 0 ? '$' + (priceSum/totalTrades).toFixed(2) : '$0.00';
+  document.getElementById('a1_cs').textContent = '$' + totalCS;
+  document.getElementById('a1_ps').textContent = '$' + totalPS;
+  document.getElementById('a1_platform').textContent = '$' + totalPlat.toFixed(2);
+}
+
+function clearTable1() { data1.length = 0; renderTable1(); }
+
+// =============================================================
+// ACTIVITY 2: NETWORK EFFECTS
+// =============================================================
+let rowCount2 = 0;
+const data2 = [];
+
+function addRow2() {
+  rowCount2++;
+  const student = prompt('Enter Student ID:', 'S' + String(rowCount2).padStart(3,'0'));
+  if (!student) return;
+  const r1 = prompt('Round 1 Choice (A or B):', 'A');
+  if (!r1) return;
+  const r2 = prompt('Round 2 Choice (A or B):', 'A');
+  if (!r2) return;
+  const r3 = prompt('Round 3 Choice (A or B):', 'A');
+  if (!r3) return;
+
+  data2.push({ id: rowCount2, student, r1: r1.toUpperCase(), r2: r2.toUpperCase(), r3: r3.toUpperCase() });
+  renderTable2();
+}
+
+function renderTable2() {
+  const tbody = document.getElementById('tbody2');
+  tbody.innerHTML = '';
+  let aCount = 0, bCount = 0, a1=0,b1=0,a2=0,b2=0,a3=0,b3=0;
+
+  data2.forEach(d => {
+    if (d.r1 === 'A') a1++; else if (d.r1 === 'B') b1++;
+    if (d.r2 === 'A') a2++; else if (d.r2 === 'B') b2++;
+    if (d.r3 === 'A') a3++; else if (d.r3 === 'B') b3++;
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${d.id}</td>
+      <td>${d.student}</td>
+      <td class="${d.r1 === 'A' ? 'highlight-green' : 'highlight-gold'}">${d.r1}</td>
+      <td class="${d.r2 === 'A' ? 'highlight-green' : 'highlight-gold'}">${d.r2}</td>
+      <td class="${d.r3 === 'A' ? 'highlight-green' : 'highlight-gold'}">${d.r3}</td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  const total = data2.length;
+  document.getElementById('a2_a').textContent = a3;
+  document.getElementById('a2_b').textContent = b3;
+  document.getElementById('a2_total').textContent = total;
+  document.getElementById('a2_winner').textContent = a3 > b3 ? 'Platform A' : b3 > a3 ? 'Platform B' : 'Tie';
+
+  // Update chart
+  const maxVal = Math.max(a1,b1,a2,b2,a3,b3,1);
+  const chart = document.getElementById('chart2');
+  const bars = chart.querySelectorAll('.bar-fill');
+  const heights = [
+    (a1/maxVal)*120, (b1/maxVal)*120,
+    (a2/maxVal)*120, (b2/maxVal)*120,
+    (a3/maxVal)*120, (b3/maxVal)*120
+  ];
+  bars.forEach((bar, i) => { bar.style.height = heights[i] + 'px'; });
+  const labels = chart.querySelectorAll('.bar-label');
+  labels.forEach((l, i) => { l.textContent = ['R1 A','R1 B','R2 A','R2 B','R3 A','R3 B'][i] + ' (' + [a1,b1,a2,b2,a3,b3][i] + ')'; });
+}
+
+function clearTable2() { data2.length = 0; renderTable2(); }
+
+// =============================================================
+// ACTIVITY 3: PLATFORM PRICING
+// =============================================================
+let rowCount3 = 0;
+const data3 = [];
+
+function addRow3() {
+  rowCount3++;
+  const group = prompt('Enter Group Name:', 'G' + String(rowCount3).padStart(2,'0'));
+  if (!group) return;
+  const fare = parseInt(prompt('Rider Fare ($):', '5'));
+  if (!fare) return;
+  const comm = parseInt(prompt('Driver Commission (%):', '20'));
+  if (!comm) return;
+  const riders = parseInt(prompt('Number of Riders:', '10'));
+  if (!riders) return;
+  const drivers = parseInt(prompt('Number of Drivers:', '10'));
+  if (!drivers) return;
+  const trades = Math.min(riders, drivers);
+  const revenue = trades * fare * (comm/100);
+
+  data3.push({ group, fare, comm, riders, drivers, trades, revenue });
+  renderTable3();
+}
+
+function renderTable3() {
+  const tbody = document.getElementById('tbody3');
+  tbody.innerHTML = '';
+  let totalRev = 0;
+
+  data3.forEach(d => {
+    totalRev += d.revenue;
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td><strong>${d.group}</strong></td>
+      <td>$${d.fare}</td>
+      <td>${d.comm}%</td>
+      <td>${d.riders}</td>
+      <td>${d.drivers}</td>
+      <td>${d.trades}</td>
+      <td class="highlight-green">$${d.revenue.toFixed(2)}</td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  document.getElementById('a3_r1').textContent = '$' + totalRev.toFixed(2);
+  document.getElementById('a3_r2').textContent = '$' + (totalRev * 0.8).toFixed(2);
+  document.getElementById('a3_r3').textContent = '$' + (totalRev * 1.2).toFixed(2);
+  document.getElementById('a3_winner').textContent = totalRev > 0 ? 'Revenue: $' + totalRev.toFixed(2) : 'No data';
+}
+
+function clearTable3() { data3.length = 0; renderTable3(); }
+
+// =============================================================
+// ACTIVITY 4: ALGORITHM GAME
+// =============================================================
+let rowCount4 = 0;
+const data4 = [];
+
+function addRow4() {
+  rowCount4++;
+  const round = parseInt(prompt('Enter Round (1, 2, or 3):', '1'));
+  if (!round) return;
+  const wtp = parseInt(prompt('Buyer WTP ($2-10):', Math.floor(Math.random()*8+2)));
+  if (!wtp) return;
+  const cost = parseInt(prompt('Seller Cost ($2-10):', Math.floor(Math.random()*8+2)));
+  if (!cost) return;
+  const price = parseInt(prompt('Trade Price:', Math.floor((wtp + cost) / 2)));
+  if (!price) return;
+
+  const cs = wtp - price;
+  const ps = price - cost;
+  data4.push({ id: rowCount4, round, wtp, cost, price, cs, ps });
+  renderTable4();
+}
+
+function renderTable4() {
+  const tbody = document.getElementById('tbody4');
+  tbody.innerHTML = '';
+  let totalTrades = 0, totalSurplus = 0, priceSum = 0;
+
+  data4.forEach(d => {
+    totalTrades++;
+    totalSurplus += d.cs + d.ps;
+    priceSum += d.price;
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${d.id}</td>
+      <td><strong>Round ${d.round}</strong></td>
+      <td>$${d.wtp}</td>
+      <td>$${d.cost}</td>
+      <td>$${d.price}</td>
+      <td class="${d.cs > 0 ? 'highlight-green' : 'highlight-red'}">$${d.cs}</td>
+      <td class="${d.ps > 0 ? 'highlight-green' : 'highlight-red'}">$${d.ps}</td>
+      <td class="highlight-gold">$${(d.cs + d.ps)}</td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  document.getElementById('a4_trades').textContent = totalTrades;
+  document.getElementById('a4_avg').textContent = totalTrades > 0 ? '$' + (priceSum/totalTrades).toFixed(2) : '$0.00';
+  document.getElementById('a4_surplus').textContent = '$' + totalSurplus;
+
+  // Find best round
+  const rounds = {};
+  data4.forEach(d => {
+    if (!rounds[d.round]) rounds[d.round] = { trades: 0, surplus: 0 };
+    rounds[d.round].trades++;
+    rounds[d.round].surplus += d.cs + d.ps;
+  });
+  let best = '-';
+  let bestVal = -Infinity;
+  Object.keys(rounds).forEach(r => {
+    if (rounds[r].surplus > bestVal) { bestVal = rounds[r].surplus; best = 'Round ' + r; }
+  });
+  document.getElementById('a4_round').textContent = best;
+}
+
+function clearTable4() { data4.length = 0; renderTable4(); }
+
+// =============================================================
+// ACTIVITY 5: PLATFORM MONOPOLY
+// =============================================================
+let rowCount5 = 0;
+const data5 = [];
+
+function addRow5() {
+  rowCount5++;
+  const dev = prompt('Developer Name:', 'Dev' + String(rowCount5));
+  if (!dev) return;
+  const r1rev = parseInt(prompt('Round 1 Revenue:', '100'));
+  if (!r1rev) return;
+  const r1cost = parseInt(prompt('Round 1 Cost:', '50'));
+  if (!r1cost) return;
+  const r2rev = parseInt(prompt('Round 2 Revenue:', '120'));
+  if (!r2rev) return;
+  const r2comm = parseInt(prompt('Round 2 Commission (%):', '30'));
+  if (!r2comm) return;
+  const r3users = parseInt(prompt('Round 3 Users:', '50'));
+  if (!r3users) return;
+  const r3profit = parseInt(prompt('Round 3 Profit:', '30'));
+  if (!r3profit) return;
+
+  data5.push({ dev, r1rev, r1cost, r2rev, r2comm, r3users, r3profit });
+  renderTable5();
+}
+
+function renderTable5() {
+  const tbody = document.getElementById('tbody5');
+  tbody.innerHTML = '';
+  let totalDevProfit = 0, totalPlatform = 0, totalConsumers = 0;
+
+  data5.forEach(d => {
+    const r1profit = d.r1rev - d.r1cost;
+    const r2profit = d.r2rev - (d.r2rev * d.r2comm / 100);
+    totalDevProfit += r1profit + r2profit + d.r3profit;
+    totalPlatform += d.r2rev * d.r2comm / 100;
+    totalConsumers += d.r3users;
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td><strong>${d.dev}</strong></td>
+      <td>$${d.r1rev}</td>
+      <td>$${d.r1cost}</td>
+      <td class="${r1profit > 0 ? 'highlight-green' : 'highlight-red'}">$${r1profit}</td>
+      <td>$${d.r2rev}</td>
+      <td>${d.r2comm}%</td>
+      <td class="${r2profit > 0 ? 'highlight-green' : 'highlight-red'}">$${r2profit.toFixed(2)}</td>
+      <td>${d.r3users}</td>
+      <td class="${d.r3profit > 0 ? 'highlight-green' : 'highlight-red'}">$${d.r3profit}</td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  document.getElementById('a5_dev').textContent = '$' + totalDevProfit;
+  document.getElementById('a5_platform_rev').textContent = '$' + totalPlatform.toFixed(2);
+  document.getElementById('a5_consumers').textContent = totalConsumers;
+  document.getElementById('a5_winner').textContent = totalPlatform > 0 ? 'Platform Power: $' + totalPlatform.toFixed(2) : 'No data';
+}
+
+function clearTable5() { data5.length = 0; renderTable5(); }
+
+// =============================================================
+// INITIALIZE WITH SAMPLE DATA
+// =============================================================
+function initSampleData() {
+  // Activity 1 sample
+  const sample1 = [
+    { id:1, round:1, buyer:'S001', wtp:8, seller:'S016', cost:3, price:5, cs:3, ps:2, platform:0 },
+    { id:2, round:1, buyer:'S002', wtp:9, seller:'S017', cost:4, price:6, cs:3, ps:2, platform:0 },
+    { id:3, round:2, buyer:'S003', wtp:7, seller:'S018', cost:5, price:5, cs:2, ps:0, platform:0.5 },
+    { id:4, round:2, buyer:'S004', wtp:6, seller:'S019', cost:2, price:4, cs:2, ps:2, platform:0.4 }
+  ];
+  data1.push(...sample1);
+  renderTable1();
+
+  // Activity 2 sample
+  const sample2 = [
+    { id:1, student:'S001', r1:'A', r2:'A', r3:'A' },
+    { id:2, student:'S002', r1:'A', r2:'B', r3:'A' },
+    { id:3, student:'S003', r1:'B', r2:'B', r3:'B' },
+    { id:4, student:'S004', r1:'A', r2:'A', r3:'A' },
+    { id:5, student:'S005', r1:'B', r2:'A', r3:'A' }
+  ];
+  data2.push(...sample2);
+  renderTable2();
+
+  // Activity 3 sample
+  const sample3 = [
+    { group:'G01', fare:6, comm:20, riders:12, drivers:10, trades:10, revenue:12 },
+    { group:'G02', fare:5, comm:25, riders:10, drivers:12, trades:10, revenue:12.5 },
+    { group:'G03', fare:7, comm:15, riders:8, drivers:10, trades:8, revenue:8.4 }
+  ];
+  data3.push(...sample3);
+  renderTable3();
+
+  // Activity 4 sample
+  const sample4 = [
+    { id:1, round:1, wtp:8, cost:3, price:5, cs:3, ps:2 },
+    { id:2, round:1, wtp:9, cost:4, price:6, cs:3, ps:2 },
+    { id:3, round:2, wtp:7, cost:2, price:4, cs:3, ps:2 },
+    { id:4, round:2, wtp:6, cost:5, price:5, cs:1, ps:0 },
+    { id:5, round:3, wtp:8, cost:3, price:5, cs:3, ps:2 }
+  ];
+  data4.push(...sample4);
+  renderTable4();
+
+  // Activity 5 sample
+  const sample5 = [
+    { dev:'Dev1', r1rev:100, r1cost:50, r2rev:120, r2comm:30, r3users:60, r3profit:35 },
+    { dev:'Dev2', r1rev:80, r1cost:40, r2rev:90, r2comm:30, r3users:40, r3profit:20 }
+  ];
+  data5.push(...sample5);
+  renderTable5();
+}
+
+initSampleData();
+</script>
+
+</body>
+</html>
